@@ -7,6 +7,7 @@
   (failure? [self])
   (bind [self f])
   (map-success [self f])
+  (apply [self f])
   (unwrap [self]))
 
 (defprotocol ResultError
@@ -59,6 +60,7 @@
   (map-success [self _] self)
   (bind [self _] self)
   (unwrap [_] (throw e))
+  (send [_ _] nil)
 
   ResultError
   (error-message [_] (.getMessage e))
@@ -75,6 +77,7 @@
   (map-success [self _] self)
   (bind [self _] self)
   (unwrap [_] (throw (ex-info msg context)))
+  (send [_ _] nil)
 
   ResultError
   (error-message [_] msg)
@@ -96,7 +99,8 @@
   (failure? [_] false)
   (map-success [_ f] (catching-errors (->Success (f val))))
   (bind [_ f] (catching-errors (f val)))
-  (unwrap [_] val))
+  (unwrap [_] val)
+  (send [_ f] (f val)))
 
 (defn success [o] (->Success o))
 
@@ -120,7 +124,7 @@
   (when (not (even? (count bindings)))
     (throw (ex-info "let-result binding requires an even number of forms")))
   (let [bindings (partition 2 bindings)]
-    (fold-forms (reverse bindings) body)))
+    (fold-forms bindings body)))
 
 ;; Nah, this is wrong--inject argument
 #_(defmacro result-> [result & steps]
