@@ -121,3 +121,12 @@
     (throw (ex-info "let-result binding requires an even number of forms")))
   (let [bindings (partition 2 bindings)]
     (fold-forms (reverse bindings) body)))
+
+(defmacro result-> [result & steps]
+  (defn fold-forms [fs o]
+    (if (empty? fs)
+      `(do ~o)
+      (let [f (first fs)
+            fs (rest fs)]
+        `(bind ~(fold-forms fs o) ~f))))
+  (fold-forms (reverse steps) result))
