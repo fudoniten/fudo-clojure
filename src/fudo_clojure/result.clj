@@ -90,13 +90,13 @@
         (catch java.lang.RuntimeException e#
           (exception-failure e#))))
 
-(defrecord Success [o]
+(defrecord Success [val]
   Result
   (success? [_] true)
   (failure? [_] false)
-  (map-success [_ f] (catching-errors (->Success (f o))))
-  (bind [_ f] (catching-errors (f o)))
-  (unwrap [_] o))
+  (map-success [_ f] (catching-errors (->Success (f val))))
+  (bind [_ f] (catching-errors (f val)))
+  (unwrap [_] val))
 
 (defn success [o] (->Success o))
 
@@ -122,7 +122,8 @@
   (let [bindings (partition 2 bindings)]
     (fold-forms (reverse bindings) body)))
 
-(defmacro result-> [result & steps]
+;; Nah, this is wrong--inject argument
+#_(defmacro result-> [result & steps]
   (defn fold-forms [fs o]
     (if (empty? fs)
       `(do ~o)
@@ -130,3 +131,9 @@
             fs (rest fs)]
         `(bind ~(fold-forms fs o) ~f))))
   (fold-forms (reverse steps) result))
+
+(defn result-of [spec]
+  (fn [o]
+    (s/or :failure (failure? o)
+          :success (s/and (success? o)
+                          (s/valid? spec (unwrap o))))))
