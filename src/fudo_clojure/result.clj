@@ -6,6 +6,7 @@
   (failure? [self])
   (bind [self f])
   (map-success [self f])
+  (send-success [self f])
   (unwrap [self]))
 
 (defprotocol ResultError
@@ -56,6 +57,7 @@
   (failure? [_] true)
   (success? [_] false)
   (map-success [self _] self)
+  (send-success [self _] nil)
   (bind [self _] self)
   (unwrap [_] (throw e))
 
@@ -72,6 +74,7 @@
   (failure? [_] true)
   (success? [_] false)
   (map-success [self _] self)
+  (send-success [self _] nil)
   (bind [self _] self)
   (unwrap [_] (throw (ex-info msg context)))
 
@@ -94,6 +97,7 @@
   (success? [_] true)
   (failure? [_] false)
   (map-success [_ f] (catching-errors (->Success (f val))))
+  (send-success [_ f] (f val))
   (bind [_ f] (catching-errors (f val)))
   (unwrap [_] val))
 
