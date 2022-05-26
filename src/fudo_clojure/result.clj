@@ -1,5 +1,4 @@
 (ns fudo-clojure.result
-  (:refer-clojure :exclude [get])
   (:require [clojure.spec.alpha :as s]))
 
 (defprotocol Result
@@ -7,7 +6,6 @@
   (failure? [self])
   (bind [self f])
   (map-success [self f])
-  (apply [self f])
   (unwrap [self]))
 
 (defprotocol ResultError
@@ -60,7 +58,6 @@
   (map-success [self _] self)
   (bind [self _] self)
   (unwrap [_] (throw e))
-  (send [_ _] nil)
 
   ResultError
   (error-message [_] (.getMessage e))
@@ -77,7 +74,6 @@
   (map-success [self _] self)
   (bind [self _] self)
   (unwrap [_] (throw (ex-info msg context)))
-  (send [_ _] nil)
 
   ResultError
   (error-message [_] msg)
@@ -99,8 +95,7 @@
   (failure? [_] false)
   (map-success [_ f] (catching-errors (->Success (f val))))
   (bind [_ f] (catching-errors (f val)))
-  (unwrap [_] val)
-  (send [_ f] (f val)))
+  (unwrap [_] val))
 
 (defn success [o] (->Success o))
 
