@@ -9,13 +9,17 @@ let
 in stdenv.mkDerivation {
   name = base-name;
   src = gitignoreSource ./.;
-  outputs = [ "lib" ];
-  buildInputs = [ clojure ] ++ map (d: d.paths) cljdeps.packages;
+  buildInputs = [ clojure ];
+  propagatedBuildInputs = map (d: d.paths) cljdeps.packages;
   buildPhase = ''
-    clojure -T:build jar
+    HOME=$TEMP/home
+    mkdir -p $HOME
+    clojure -X:build jar
   '';
   installPhase = ''
-    mkdir $lib
-    cp ./target/${base-name}*.jar $lib
+    mkdir -p $lib/share
+    mkdir -p $out/share
+    cp ./target/${base-name}*.jar $lib/share
+    cp ./target/${base-name}*.jar $out/share
   '';
 }
