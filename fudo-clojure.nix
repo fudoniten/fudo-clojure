@@ -10,7 +10,7 @@ let
 
 in stdenv.mkDerivation {
   name = full-name;
-  src = ./.;
+  src = gitignoreSource ./.;
   buildInputs = [ clojure ];
   propagatedBuildInputs = map (d: d.paths) cljdeps.packages;
   buildPhase = ''
