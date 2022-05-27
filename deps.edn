@@ -1,6 +1,6 @@
 {
  :paths ["src"]
- :deps { org.clojure/clojure { :mvn/version "1.10.3" } }
+ :deps { org.clojure/clojure { :mvn/version "1.11.1" } }
  :aliases {
            :test {
                   :extra-paths ["test"]
@@ -15,12 +15,12 @@
                   :exec-fn cognitect.test-runner.api/test
                   }
            :build {
-                   :deps {
-                          io.github.clojure/tools.build {
-                                                         :git/tag "v0.8.2"
-                                                         :sha "ba1a2bf421838802e7bdefc541b41f57582e53b6"
-                                                         }
-                          }
+                   :replace-deps {
+                                  io.github.clojure/tools.build {
+                                                                 :git/tag "v0.8.2"
+                                                                 :sha "ba1a2bf421838802e7bdefc541b41f57582e53b6"
+                                                                 }
+                                  }
                    :ns-default build
                    }
            }
