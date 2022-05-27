@@ -1,5 +1,4 @@
-{ lib, stdenv, clojure, gitignoreSource, callPackage, writeText
-, writeShellScript, ... }:
+{ lib, stdenv, clojure, callPackage, writeText, writeShellScript, ... }:
 
 let
   base-name = "fudo-clojure";
@@ -7,16 +6,17 @@ let
   full-name = "${base-name}-${version}";
 
   cljdeps = callPackage ./deps.nix { };
+  classpath = cljdeps.makeClasspaths { };
 
 in stdenv.mkDerivation {
   name = full-name;
-  src = gitignoreSource ./.;
+  src = ./.;
   buildInputs = [ clojure ];
   propagatedBuildInputs = map (d: d.paths) cljdeps.packages;
   buildPhase = ''
     HOME=$TEMP/home
     mkdir -p $HOME
-    clojure -X:build jar :version ${version}
+    clojure -S${classpath} -X:build jar :version ${version}
   '';
   installPhase = ''
     mkdir -p $lib/share
