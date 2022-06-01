@@ -1,27 +1,11 @@
-{ lib, stdenv, clojure, callPackage, writeText, writeShellScript, ... }:
+{ mkClojureLib, build-tools-jar, callPackage, ... }:
 
-let
-  base-name = "fudo-clojure";
+let clj-deps = callPackage ./deps.nix { };
+in mkClojureLib {
+  inherit build-tools-jar clj-deps;
+  name = "fudo-clojure";
+  group = "org.fudo";
   version = "0.1";
-  full-name = "${base-name}-${version}";
-
-  cljdeps = callPackage ./deps.nix { };
-  classpath = cljdeps.makeClasspaths { };
-
-in stdenv.mkDerivation {
-  name = full-name;
   src = ./.;
-  buildInputs = [ clojure ];
-  propagatedBuildInputs = map (d: d.paths) cljdeps.packages;
-  buildPhase = ''
-    HOME=$TEMP/home
-    mkdir -p $HOME
-    clojure -S${classpath} -X:build jar :version ${version}
-  '';
-  installPhase = ''
-    mkdir -p $lib/share
-    mkdir -p $out/share
-    cp ./target/${base-name}-${version}.jar $lib/share
-    cp ./target/${base-name}-${version}.jar $out/share
-  '';
+  src-paths = [ "src" ];
 }

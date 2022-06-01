@@ -57,7 +57,7 @@
   (failure? [_] true)
   (success? [_] false)
   (map-success [self _] self)
-  (send-success [self _] nil)
+  (send-success [_ _] nil)
   (bind [self _] self)
   (unwrap [_] (throw e))
 
@@ -74,7 +74,7 @@
   (failure? [_] true)
   (success? [_] false)
   (map-success [self _] self)
-  (send-success [self _] nil)
+  (send-success [_ _] nil)
   (bind [self _] self)
   (unwrap [_] (throw (ex-info msg context)))
 
@@ -115,15 +115,15 @@
          ~@failure-body))))
 
 (defmacro let-result [bindings & body]
-  (defn fold-forms [bindings inner]
-    (if (empty? bindings)
-      `(do ~@body)
-      (let [[var val] (first bindings)]
-        `(bind ~val (fn [~var] ~(fold-forms (rest bindings) body))))))
   (when (not (even? (count bindings)))
-    (throw (ex-info "let-result binding requires an even number of forms")))
-  (let [bindings (partition 2 bindings)]
-    (fold-forms bindings body)))
+    (throw (ex-info "let-result binding requires an even number of forms" {:bindings bindings})))
+  (letfn [(fold-forms [bindings]
+            (if (empty? bindings)
+              `(do ~@body)
+              (let [[var val] (first bindings)]
+                `(bind ~val (fn [~var] ~(fold-forms (rest bindings)))))))]
+    (let [bindings (partition 2 bindings)]
+      (fold-forms bindings))))
 
 ;; Nah, this is wrong--inject argument
 #_(defmacro result-> [result & steps]
