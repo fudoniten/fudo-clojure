@@ -10,7 +10,7 @@
         "utils": "utils_2"
       },
       "locked": {
-        "narHash": "sha256-NRVOPRm4bdHrje64NFOW6nxFoSnoElaRO0yLOR2P5w8=",
+        "narHash": "sha256-i5WWF+sWnvJMvdwaRV+mhJY919s64Mrba7HbN0EreD0=",
         "path": "/net/projects/niten/clojure-build-tools",
         "type": "path"
       },
@@ -145,16 +145,16 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1645296114,
-        "narHash": "sha256-y53N7TyIkXsjMpOG7RhvqJFGDacLs9HlyHeSTBioqYU=",
+        "lastModified": 1654005557,
+        "narHash": "sha256-J6elwUzPoco+r5qWPHhvS2EHVWomUtNcxzkfdAQOwEU=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "530a53dcbc9437363471167a5e4762c5fcfa34a1",
+        "rev": "08950a6e29cf7bddee466592eb790a417550f7f9",
         "type": "github"
       },
       "original": {
         "id": "nixpkgs",
-        "ref": "nixos-21.05",
+        "ref": "nixos-22.05",
         "type": "indirect"
       }
     },
@@ -190,16 +190,16 @@
     },
     "nixpkgs_5": {
       "locked": {
-        "lastModified": 1645296114,
-        "narHash": "sha256-y53N7TyIkXsjMpOG7RhvqJFGDacLs9HlyHeSTBioqYU=",
+        "lastModified": 1654005557,
+        "narHash": "sha256-J6elwUzPoco+r5qWPHhvS2EHVWomUtNcxzkfdAQOwEU=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "530a53dcbc9437363471167a5e4762c5fcfa34a1",
+        "rev": "08950a6e29cf7bddee466592eb790a417550f7f9",
         "type": "github"
       },
       "original": {
         "id": "nixpkgs",
-        "ref": "nixos-21.05",
+        "ref": "nixos-22.05",
         "type": "indirect"
       }
     },

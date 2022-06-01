@@ -1,1 +1,0 @@
-(ns fudo-clojure.core)

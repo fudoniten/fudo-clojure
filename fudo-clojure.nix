@@ -7,5 +7,6 @@ in mkClojureLib {
   group = "org.fudo";
   version = "0.1";
   src = ./.;
+  deps-edn = ./deps.edn;
   src-paths = [ "src" ];
 }

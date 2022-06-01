@@ -2,7 +2,7 @@
   description = "Fudo Clojure utilities.";
 
   inputs = {
-    nixpkgs.url = "nixpkgs/nixos-21.05";
+    nixpkgs.url = "nixpkgs/nixos-22.05";
     utils.url = "github:numtide/flake-utils";
     clj2nix.url = "github:hlolli/clj2nix";
     # build-tools.url = "git+https://git.fudo.org/fudo-public/build.tools.nix";
