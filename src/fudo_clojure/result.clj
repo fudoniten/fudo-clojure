@@ -135,8 +135,3 @@
         `(bind ~(fold-forms fs o) ~f))))
   (fold-forms (reverse steps) result))
 
-(defn result-of [spec]
-  (fn [o]
-    (s/or :failure (failure? o)
-          :success (s/and (success? o)
-                          (s/valid? spec (unwrap o))))))

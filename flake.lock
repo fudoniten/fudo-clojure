@@ -10,7 +10,7 @@
         "utils": "utils_2"
       },
       "locked": {
-        "narHash": "sha256-i5WWF+sWnvJMvdwaRV+mhJY919s64Mrba7HbN0EreD0=",
+        "narHash": "sha256-V2lVK+jHGpWD7dhKsBQG9EQUh6nQYCrdfrE8z5rJdK8=",
         "path": "/net/projects/niten/clojure-build-tools",
         "type": "path"
       },
