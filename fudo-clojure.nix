@@ -1,4 +1,4 @@
-{ stdenv, lib, clojure, callPackage, fetchgit, fetchMavenArtifact, ... }:
+{ stdenv, lib, jre, clojure, callPackage, fetchgit, fetchMavenArtifact, ... }:
 
 let
   base-name = "fudo-clojure";
@@ -10,14 +10,17 @@ let
     callPackage ./deps.nix { inherit fetchgit fetchMavenArtifact lib; };
   classpath = clj-deps.makeClasspaths { };
 
+  pthru = o: builtins.trace o o;
+
 in stdenv.mkDerivation {
   name = "${full-name}.jar";
   src = ./.;
-  buildInputs = [ clojure ] ++ (map (x: x.paths) clj-deps.packages);
-  buildPhase = ''
+  buildInputs = [ jre clojure ] ++ (map (x: x.paths) clj-deps.packages);
+  buildPhase = pthru ''
     HOME=./home
     mkdir -p $HOME
-    clojure -Scp ./src:${classpath} -X:build build/uberjar :project ${project}/${base-name} :version ${version}
+
+    clojure -Scp .:./src:${classpath} -M:build
   '';
   installPhase = ''
     cp ./target/${base-name}-${version}-standalone.jar $out

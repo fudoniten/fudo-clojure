@@ -1,5 +1,6 @@
 (ns build
-  (:require [clojure.tools.build.api :as b]))
+  (:require [clojure.tools.build.api :as b])
+  (:gen-class))
 
 (def target-dir "./target")
 (def class-dir (format "%s/classes" target-dir))
@@ -33,6 +34,20 @@
     (println (format "jar file created at: %s" jar-file))))
 
 (defn uberjar [{:keys [project version]}]
+  (println "Starting uberjar build...")
+  (let [uber-file (mk-uberjar-file project version)]
+    (clean nil)
+    (b/copy-dir {:src-dirs   ["src"]
+                 :target-dir class-dir})
+    (b/compile-clj {:basis     basis
+                    :src-dirs  ["src"]
+                    :class-dir class-dir})
+    (b/uber {:class-dir class-dir
+             :uber-file uber-file
+             :basis     basis})
+    (println (format "uberjar file created at: %s" uber-file))))
+
+(defn build-uberjar [project version]
   (let [uber-file (mk-uberjar-file project version)]
     (clean nil)
     (b/copy-dir {:src-dirs   ["src"]
