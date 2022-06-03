@@ -1,5 +1,6 @@
 (ns fudo-clojure.common
-  (:require [clojure.spec.alpha :as s]))
+  (:require [clojure.spec.alpha :as s]
+            [clojure.pprint :refer [pprint]]))
 
 (defn to-uuid [s] (java.util.UUID/fromString s))
 
