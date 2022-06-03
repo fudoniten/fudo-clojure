@@ -1,0 +1,127 @@
+(ns fudo-clojure.http.request
+  (:require [clojure.spec.alpha :as s]
+            [clojure.data.json :as json]
+            [clj-http.client :as clj-http]
+            [camel-snake-kebab.core :refer [->snake_case_keyword]]))
+
+(s/def ::http-method #{ :GET :POST :DELETE })
+
+(let [path-regex #"^(/[^ !$?`&*\(\)+]+)+$"]
+  (defn- valid-base-path? [path?]
+    (and (string? path?)
+         (not (nil? (re-matches path-regex path?))))))
+
+(s/def ::base-request-path valid-base-path?)
+(s/def ::request-headers (s/map-of keyword? string?))
+
+(s/def ::param-value (s/or :str string? :num number? :keyword keyword?))
+(s/def ::query-params (s/map-of keyword? ::param-value))
+(s/def ::body-params (s/map-of keyword? ::param-value))
+
+(defn- update-base [m k f & args]
+  "Update, but pass in the whole map to f, not just the key value."
+  (assoc m k (apply f (cons m args))))
+
+(def url? (partial instance? java.net.URL))
+
+(defn- url->string [url] (.toExternalForm url))
+
+;; NOTE: The question-mark MUST be on the path, because clj-http adds it, and
+;;  Coinbase expects the path to match exactly!
+(defn- build-path [path query-params]
+  (str path "?" (clj-http/generate-query-string query-params)))
+
+(defn- build-request-path [req]
+  (apply build-path ((juxt ::base-request-path ::query-params) req)))
+
+(defn- build-url [host path query-params]
+  (let [full-path (build-path path query-params)]
+    (url->string (java.net.URL. "https" host full-path))))
+
+(defn- build-request-url [req]
+  (apply build-url ((juxt ::host ::base-request-path ::query-params) req)))
+(s/fdef build-request-url
+  :args (s/cat :req (s/keys :req [::base-request-path ::query-params]))
+  :ret  string?)
+
+(defn base-request []
+  {::timestamp         (java.time.Instant/now)
+   ::query-params      {}
+   ::base-request-path "/"})
+
+(defn as-get [req]
+  (assoc req ::http-method :GET))
+
+(defn as-post [req]
+  (assoc req ::http-method :POST))
+
+(defn as-delete [req]
+  (assoc req ::http-method :DELETE))
+
+(defn with-path [req path]
+  (-> req
+      (assoc       ::base-request-path path)
+      (update-base ::request-path build-request-path)))
+
+(defn with-host [req host]
+  (assoc req ::host host))
+
+(defn with-headers [req headers]
+  (assoc req ::headers headers))
+
+(defn with-body [req body]
+  (assoc req ::body body))
+
+(defn with-timestamp [req ts]
+  (assoc req ::timestamp ts))
+
+(defn- stringify [v]
+  (cond (keyword? v) (name v)
+        (coll? v)    (map stringify v)
+        :else        (str v)))
+
+(defn- sanitize-params [params]
+  (into {}
+        (map (fn [[k v]] [(->snake_case_keyword k) (stringify v)]))
+        params))
+
+;; NOTE: assumes JSON for now
+(defn- encode-body-params [params]
+  (some-> params (sanitize-params) (json/write-str)))
+
+(defn with-query-params [req params]
+  (-> req
+      (update      ::query-params merge params)
+      (update-base ::request-path build-request-path)))
+
+(defn with-body-params [req params]
+  (update req ::body-params merge params))
+
+(defn- finalize
+  "Coinbase (and presumably other exchanges) requires the submitted request to be
+  signed, including parts (full URL, request path, body) that won't be available
+  until the last minute. This function will format the request so clj-http can
+  execute it, and once the URL, body, and path are available and formatted, will
+  execute add-auth-headers (which is expected to add headers to the request)."
+  ([req] (finalize req (fn [_] {})))
+  ([req authenticate]
+   ;; This ordering is carefully thought out....
+   (-> req
+       (update-base ::query-params (comp sanitize-params ::query-params))
+       (update-base ::url          build-request-url)
+       (update-base ::request-path build-request-path)
+       (update-base ::body         (comp encode-body-params ::body-params))
+       (update-base ::headers      (comp (partial merge (::headers req)) authenticate))
+       (update-base :query-params  ::query-params)
+       (update-base :headers       ::headers)
+       (update-base :body          ::body))))
+
+;; Basically getters
+(def timestamp    ::timestamp)
+(def method       (comp name ::http-method))
+(def request-path ::request-path)
+(def body         ::body)
+
+(s/def ::request
+  (s/keys :req [::url ::http-method ::query-params ::base-request-path ::timestamp]
+          :opt [::body-params]))

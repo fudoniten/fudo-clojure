@@ -1,5 +1,6 @@
 (ns fudo-clojure.result
-  (:require [clojure.spec.alpha :as s]))
+  (:require [clojure.spec.alpha :as s]
+            [clj-http.client :as clj-http]))
 
 (defprotocol Result
   (success? [self])
@@ -7,9 +8,10 @@
   (bind [self f])
   (map-success [self f])
   (send-success [self f])
-  (unwrap [self]))
+  (unwrap [self])
+  (to-string [self]))
 
-(defprotocol ResultError
+(defprotocol ResultFailure
   (error-message [self])
   (get-exception [self])
   (exception? [self]))
@@ -17,9 +19,11 @@
 (defn- is-not [spec]
   (fn [o] (not (s/valid? spec o))))
 
-(s/def ::result (partial satisfies? Result))
+(def result? (partial satisfies? Result))
+
+(s/def ::result result?)
 (s/def ::failure (every-pred (partial satisfies? Result)
-                             (partial satisfies? ResultError)))
+                             (partial satisfies? ResultFailure)))
 (s/def ::success (s/and ::result (is-not ::failure)))
 
 (s/def ::exception (partial instance? java.lang.Exception))
@@ -60,8 +64,9 @@
   (send-success [_ _] nil)
   (bind [self _] self)
   (unwrap [_] (throw e))
+  (to-string [_] (str "#exception-failure[" (.getMessage e) "]"))
 
-  ResultError
+  ResultFailure
   (error-message [_] (.getMessage e))
   (get-exception [_] e)
   (exception? [_] true))
@@ -77,8 +82,9 @@
   (send-success [_ _] nil)
   (bind [self _] self)
   (unwrap [_] (throw (ex-info msg context)))
+  (to-string [_] (str "#failure[" msg "]"))
 
-  ResultError
+  ResultFailure
   (error-message [_] msg)
   (get-exception [_] nil)
   (exception? [_] false))
@@ -87,7 +93,7 @@
   ([msg] (failure msg {}))
   ([msg context] (->Failure msg context)))
 
-(defmacro ^:private catching-errors [& args]
+(defmacro catching-errors [& args]
   `(try (do ~@args)
         (catch java.lang.RuntimeException e#
           (exception-failure e#))))
@@ -99,7 +105,8 @@
   (map-success [_ f] (catching-errors (->Success (f val))))
   (send-success [_ f] (f val))
   (bind [_ f] (catching-errors (f val)))
-  (unwrap [_] val))
+  (unwrap [_] val)
+  (to-string [_] (str "#success[" val "]")))
 
 (defn success [o] (->Success o))
 
@@ -124,6 +131,11 @@
                 `(bind ~val (fn [~var] ~(fold-forms (rest bindings)))))))]
     (let [bindings (partition 2 bindings)]
       (fold-forms bindings))))
+
+(defn result-of [spec]
+  (s/or ::failure
+        (s/and ::success
+               (fn [s] (s/valid? spec (unwrap s))))))
 
 ;; Nah, this is wrong--inject argument
 #_(defmacro result-> [result & steps]
