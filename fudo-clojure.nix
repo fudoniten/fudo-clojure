@@ -16,11 +16,12 @@ in stdenv.mkDerivation {
   name = "${full-name}.jar";
   src = ./.;
   buildInputs = [ jre clojure ] ++ (map (x: x.paths) clj-deps.packages);
-  buildPhase = pthru ''
+  buildPhase = ''
     HOME=./home
     mkdir -p $HOME
 
     clojure -Scp .:./src:${classpath} -M:build
+    cat /tmp/*.edn
   '';
   installPhase = ''
     cp ./target/${base-name}-${version}-standalone.jar $out
