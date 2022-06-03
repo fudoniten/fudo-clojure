@@ -76,22 +76,13 @@
 (def client? (partial satisfies? HTTPClient))
 (s/def ::client client?)
 
-(defn- log-request [f req-type logger url options]
-  (let [type-str (str "HTTP " req-type)]
-    (log/debug! logger (str type-str " " url ", options: " options))
-    (let [result (perform-request (f url options))]
-      (if (result/failure? result)
-        (log/error! logger (str type-str " " url " failed: " (to-string result)))
-        (log/debug! logger (str type-str " " url " response: " (to-string result))))
-      result)))
-
 (defn- response->json [response]
   (json/read-str (:body response) :key-fn keyword))
 
 (defn http-json-client [& {:keys [logger authenticator]
                            :or   {authenticator (fn [_] {})}}]
   (letfn [(execute! [f req opt-fn]
-            (let [final (ensure-conform ::req/request (finalize req authenticator))]
+            (let [final (ensure-conform ::req/request (req/finalize req authenticator))]
               (map-success
                (try (http-success (f (::req/url final) (opt-fn final)))
                     (catch clojure.lang.ExceptionInfo e

@@ -97,7 +97,7 @@
 (defn with-body-params [req params]
   (update req ::body-params merge params))
 
-(defn- finalize
+(defn finalize
   "Coinbase (and presumably other exchanges) requires the submitted request to be
   signed, including parts (full URL, request path, body) that won't be available
   until the last minute. This function will format the request so clj-http can
