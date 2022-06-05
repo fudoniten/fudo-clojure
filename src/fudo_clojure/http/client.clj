@@ -10,7 +10,9 @@
                                                     success
                                                     to-string]]
             [fudo-clojure.logging :as log]
-            [fudo-clojure.http.request :as req]))
+            [fudo-clojure.http.request :as req]
+            [fudo-clojure.http.client :as client]
+            [fudo-clojure.common :as common]))
 
 (defprotocol HTTPResult
   (status [self])
@@ -28,8 +30,8 @@
     result/Result
     (success?    [_]   true)
     (failure?    [_]   false)
-    (map-success [_ f] (f resp))
-    (bind        [_ f] (catching-errors (f resp)))
+    (map-success [_ f] (catching-errors (success (f resp))))
+    (bind        [_ f] (f resp))
     (unwrap      [_]   (:body resp))
     (to-string   [_]   (str "#http-success[" resp "]"))
 
@@ -53,11 +55,11 @@
       (status-message [self] (str (:status resp) " " (:reason-phrase resp)))
 
       HTTPFailure
-      (not-found?    [_] (= 404  (status e)))
-      (unauthorized? [_] (= 401  (status e)))
-      (forbidden?    [_] (= 403  (status e)))
-      (bad-request?  [_] (= 400  (status e)))
-      (server-error? [_] (>= 500 (status e)))
+      (not-found?    [self] (= 404  (status self)))
+      (unauthorized? [self] (= 401  (status self)))
+      (forbidden?    [self] (= 403  (status self)))
+      (bad-request?  [self] (= 400  (status self)))
+      (server-error? [self] (<= 500 (status self) 599))
 
       result/ResultFailure
       (error-message [self] (status-message self))
@@ -79,31 +81,70 @@
 (defn- response->json [response]
   (json/read-str (:body response) :key-fn keyword))
 
-(defn http-json-client [& {:keys [logger authenticator]
-                           :or   {authenticator (fn [_] {})}}]
-  (letfn [(execute! [f req opt-fn]
-            (let [final (ensure-conform ::req/request (req/finalize req authenticator))]
-              (map-success
-               (try (http-success (f (::req/url final) (opt-fn final)))
-                    (catch clojure.lang.ExceptionInfo e
-                      (http-failure e))
-                    (catch java.lang.RuntimeException e
-                      (exception-failure e)))
-               response->json)))]
+(def base-client
+  (reify HTTPClient
+    (get! [_ req]
+      (clj-http/get (::req/url req)
+                    (merge (select-keys req [::req/headers])
+                           (::req/opts req))))
+    (post! [_ req]
+      (clj-http/post (::req/url req)
+                     (merge (select-keys req [::req/headers ::req/body])
+                            (::req/opts req))))
+    (delete! [_ req]
+      (clj-http/delete (::req/url req)
+                       (merge (select-keys req [::req/headers])
+                              (::req/opts req))))))
+
+(defn client:wrap-results [client]
+  (letfn [(execute! [f req]
+            (try (http-success (f client req))
+                 (catch clojure.lang.ExceptionInfo e
+                   (http-failure e))
+                 (catch java.lang.RuntimeException e
+                   (exception-failure e))))]
+    (reify HTTPClient
+      (get!    [_ req] (execute! get!    req))
+      (post!   [_ req] (execute! post!   req))
+      (delete! [_ req] (execute! delete! req)))))
+
+(defn client:authenticate-requests [client authenticator]
+  (reify HTTPClient
+    (get!    [_ req] (get!    client (authenticator req)))
+    (post!   [_ req] (post!   client (authenticator req)))
+    (delete! [_ req] (delete! client (authenticator req)))))
+
+(defn client:jsonify [client]
+  (letfn [(decode-response [resp] (map-success resp response->json))
+          (prepare-request [req] (assoc req ::req/body
+                                        (some-> req
+                                                (req/body-params)
+                                                (json/write-str))))]
     (reify HTTPClient
       (get! [_ req]
-        (execute! clj-http/get req
-                  (fn [final] (assoc (select-keys final [:headers])
-                                    :accept :json))))
+        (decode-response (get! client
+                               (assoc (prepare-request req) ::req/opts
+                                      {:accept :json}))))
       (post! [_ req]
-        (execute! clj-http/post req
-                  (fn [final] (assoc (select-keys final [:headers :body])
-                                    :accept       :json
-                                    :content-type :json))))
+        (decode-response (post! client
+                                (assoc (prepare-request req) ::req/opts
+                                       {:accept       :json
+                                        :content-type :json}))))
       (delete! [_ req]
-        (execute! clj-http/delete req
-                  (fn [final] (assoc (select-keys final [:headers])
-                                    :accept :json)))))))
+        (decode-response (delete! client
+                                  (assoc (prepare-request req) ::req/opts
+                                         {:accept :json})))))))
+
+(defn json-client []
+  (-> base-client
+      (client:wrap-results)
+      (client:jsonify)))
+
+(defn json-auth-client [authenticator]
+  (-> base-client
+      (client:wrap-results)
+      (client:authenticate-requests authenticator)
+      (client:jsonify)))
 
 (defn- dispatch-nth [n f]
   (fn [& args] (f (nth args n))))

@@ -2,7 +2,8 @@
   (:require [clojure.spec.alpha :as s]
             [clojure.data.json :as json]
             [clj-http.client :as clj-http]
-            [camel-snake-kebab.core :refer [->snake_case_keyword]]))
+            [camel-snake-kebab.core :refer [->snake_case_keyword]]
+            [fudo-clojure.common :as common]))
 
 (s/def ::http-method #{ :GET :POST :DELETE })
 
@@ -44,6 +45,9 @@
   :args (s/cat :req (s/keys :req [::base-request-path ::query-params]))
   :ret  string?)
 
+(defn- refresh-request-url [req]
+  (assoc req ::url (build-request-url req)))
+
 (defn base-request []
   {::timestamp         (java.time.Instant/now)
    ::query-params      {}
@@ -61,10 +65,13 @@
 (defn with-path [req path]
   (-> req
       (assoc       ::base-request-path path)
-      (update-base ::request-path build-request-path)))
+      (update-base ::request-path build-request-path)
+      (refresh-request-url)))
 
 (defn with-host [req host]
-  (assoc req ::host host))
+  (-> req
+      (assoc ::host host)
+      (refresh-request-url)))
 
 (defn with-headers [req headers]
   (assoc req ::headers headers))
@@ -80,24 +87,21 @@
         (coll? v)    (map stringify v)
         :else        (str v)))
 
-(defn- sanitize-params [params]
+(defn sanitize-params [params]
   (into {}
         (map (fn [[k v]] [(->snake_case_keyword k) (stringify v)]))
         params))
 
-;; NOTE: assumes JSON for now
-(defn- encode-body-params [params]
-  (some-> params (sanitize-params) (json/write-str)))
-
 (defn with-query-params [req params]
   (-> req
-      (update      ::query-params merge params)
-      (update-base ::request-path build-request-path)))
+      (update      ::query-params merge (sanitize-params params))
+      (update-base ::request-path build-request-path)
+      (refresh-request-url)))
 
 (defn with-body-params [req params]
   (update req ::body-params merge params))
 
-(defn finalize
+#_(defn finalize
   "Coinbase (and presumably other exchanges) requires the submitted request to be
   signed, including parts (full URL, request path, body) that won't be available
   until the last minute. This function will format the request so clj-http can
@@ -110,8 +114,6 @@
        (update-base ::query-params (comp sanitize-params ::query-params))
        (update-base ::url          build-request-url)
        (update-base ::request-path build-request-path)
-       (update-base ::body         (comp encode-body-params ::body-params))
-       (update-base ::headers      (comp (partial merge (::headers req)) authenticate))
        (update-base :query-params  ::query-params)
        (update-base :headers       ::headers)
        (update-base :body          ::body))))
@@ -121,6 +123,9 @@
 (def method       (comp name ::http-method))
 (def request-path ::request-path)
 (def body         ::body)
+
+(defn body-params [req]
+  (-> req ::body-params (sanitize-params)))
 
 (s/def ::request
   (s/keys :req [::url ::http-method ::query-params ::base-request-path ::timestamp]
