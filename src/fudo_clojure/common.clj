@@ -55,3 +55,6 @@
   `(t/is (= true (nil? (explain-data ~spec ~target)))))
 (defmacro is-invalid? [spec target]
   `(t/is (= false (valid? ~spec ~target))))
+
+(defn sample [coll]
+  (nth coll (rand-int (count coll))))
