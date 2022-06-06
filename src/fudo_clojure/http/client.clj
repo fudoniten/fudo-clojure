@@ -1,6 +1,7 @@
 (ns fudo-clojure.http.client
   (:require [clojure.data.json :as json]
             [clojure.spec.alpha :as s]
+            [clojure.pprint :refer [pprint]]
             [clj-http.client :as clj-http]
 
             [fudo-clojure.common :refer [ensure-conform]]
@@ -108,6 +109,19 @@
       (post!   [_ req] (execute! post!   req))
       (delete! [_ req] (execute! delete! req)))))
 
+(defn client:log-requests [client logger]
+  (letfn [(pp-str [o] (with-out-str (pprint o)))
+          (wrap-request [f method req]
+            (let [id (java.util.UUID/randomUUID)]
+              (log/debug! logger (str method " request (" id "): " (pp-str req)))
+              (let [resp (f client req)]
+                (log/debug! logger (str method " response (" id "): " (pp-str resp)))
+                resp)))]
+    (reify HTTPClient
+      (get!    [_ req] (wrap-request get!    "GET"    req))
+      (post!   [_ req] (wrap-request post!   "POST"   req))
+      (delete! [_ req] (wrap-request delete! "DELETE" req)))))
+
 (defn client:authenticate-requests [client authenticator]
   (reify HTTPClient
     (get!    [_ req] (get!    client (authenticator req)))
@@ -135,15 +149,12 @@
                                   (assoc (prepare-request req) ::req/opts
                                          {:accept :json})))))))
 
-(defn json-client []
+(defn json-client [& {:keys [logger authenticator]
+                      :or   {logger (log/dummy-logger)}}]
   (-> base-client
+      (client:log-requests logger)
       (client:wrap-results)
-      (client:jsonify)))
-
-(defn json-auth-client [authenticator]
-  (-> base-client
-      (client:wrap-results)
-      (client:authenticate-requests authenticator)
+      (client:authenticate-requests (or authenticator identity))
       (client:jsonify)))
 
 (defn- dispatch-nth [n f]

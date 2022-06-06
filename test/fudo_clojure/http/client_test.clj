@@ -8,13 +8,15 @@
             [fudo-clojure.http.client :as client]
             [clojure.test :as t]
             [clojure.data.json :as json]
-            [fudo-clojure.common :as common]))
+            [fudo-clojure.common :as common]
+            [fudo-clojure.logging :as log]))
 
 (defn- client-returning [response]
   (-> (reify client/HTTPClient
         (get!    [_ _] response)
         (post!   [_ _] response)
         (delete! [_ _] response))
+      (client/client:log-requests (log/dummy-logger))
       (client/client:wrap-results)))
 
 (defn- client-returning-fn [f]
@@ -22,6 +24,7 @@
         (get!    [_ req] (f req))
         (post!   [_ req] (f req))
         (delete! [_ req] (f req)))
+      (client/client:log-requests (log/dummy-logger))
       (client/client:wrap-results)))
 
 (defn- client-throwing [e]
@@ -29,6 +32,7 @@
         (get!    [_ _] (throw e))
         (post!   [_ _] (throw e))
         (delete! [_ _] (throw e)))
+      (client/client:log-requests (log/dummy-logger))
       (client/client:wrap-results)))
 
 (def req
