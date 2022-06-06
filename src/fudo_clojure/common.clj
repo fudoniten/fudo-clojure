@@ -50,3 +50,8 @@
 (s/fdef base64-decode
   :args (s/cat :to-decode bytes?)
   :ret  bytes?)
+
+(defmacro is-valid? [spec target]
+  `(t/is (= true (nil? (explain-data ~spec ~target)))))
+(defmacro is-invalid? [spec target]
+  `(t/is (= false (valid? ~spec ~target))))
