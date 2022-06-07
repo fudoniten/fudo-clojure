@@ -58,3 +58,6 @@
 
 (defn sample [coll]
   (nth coll (rand-int (count coll))))
+
+(defn find-first [f coll]
+  (first (filter f coll)))
