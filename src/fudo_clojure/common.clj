@@ -61,3 +61,9 @@
 
 (defn find-first [f coll]
   (first (filter f coll)))
+
+(defn before? [a b]
+  (< 0 (.compareTo a b)))
+
+(defn date< [& dates]
+  (every? (fn [[a b]] (before? a b)) (partition 2 dates)))
