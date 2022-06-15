@@ -146,4 +146,3 @@
             fs (rest fs)]
         `(bind ~(fold-forms fs o) ~f))))
   (fold-forms (reverse steps) result))
-

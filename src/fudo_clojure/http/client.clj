@@ -113,9 +113,11 @@
   (letfn [(pp-str [o] (with-out-str (pprint o)))
           (wrap-request [f method req]
             (let [id (java.util.UUID/randomUUID)]
-              (log/debug! logger (str method " request (" id "): " (pp-str req)))
+              (log/info! logger (str method " request (" id "): " (::req/url req)))
+              (log/debug! logger (pp-str req))
               (let [resp (f client req)]
-                (log/debug! logger (str method " response (" id "): " (pp-str resp)))
+                (log/info! logger (str method " response (" id "): " (::req/url req)))
+                (log/debug! logger (pp-str resp))
                 resp)))]
     (reify HTTPClient
       (get!    [_ req] (wrap-request get!    "GET"    req))
