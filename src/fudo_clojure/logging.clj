@@ -35,7 +35,7 @@
   ([f] (log-to-function f :error :notify))
   ([f error logic]
    (let [error-level (.indexOf error-log-level error)
-         logic-level (.IndexOf logic-log-level logic)]
+         logic-level (.indexOf logic-log-level logic)]
      (reify Logger
        (debug!  [_ msg] (when (>= error-level 0) (f msg)))
        (warn!   [_ msg] (when (>= error-level 1) (f msg)))
