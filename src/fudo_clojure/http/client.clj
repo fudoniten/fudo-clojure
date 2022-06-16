@@ -11,9 +11,7 @@
                                                     success
                                                     to-string]]
             [fudo-clojure.logging :as log]
-            [fudo-clojure.http.request :as req]
-            [fudo-clojure.http.client :as client]
-            [fudo-clojure.common :as common]))
+            [fudo-clojure.http.request :as req]))
 
 (defprotocol HTTPResult
   (status [self])
