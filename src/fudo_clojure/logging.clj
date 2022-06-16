@@ -31,6 +31,16 @@
 (def error-log-level [:debug :warn :error :fatal])
 (def logic-log-level [:info :notify :alert])
 
+(defmulti level-to-int identity)
+
+(defmethod level-to-int :debug  [_] 0)
+(defmethod level-to-int :warn   [_] 1)
+(defmethod level-to-int :error  [_] 2)
+(defmethod level-to-int :fatal  [_] 3)
+(defmethod level-to-int :info   [_] 0)
+(defmethod level-to-int :notify [_] 1)
+(defmethod level-to-int :alert  [_] 2)
+
 (defn log-to-function
   ([f] (log-to-function f :error :notify))
   ([f error logic]
