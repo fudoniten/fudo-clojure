@@ -59,3 +59,16 @@
 (defn print-logger
   ([]            (print-logger :error :notify))
   ([error logic] (log-to-function println error logic)))
+
+(defn combine-logs [& loggers]
+  (letfn [(log-all [method msg]
+            (doseq [logger loggers] (method logger msg)))]
+    (reify Logger
+      (debug!  [_ msg] (log-all debug! msg))
+      (warn!   [_ msg] (log-all warn!  msg))
+      (error!  [_ msg] (log-all error! msg))
+      (fatal!  [_ msg] (log-all fatal! msg))
+
+      (info!   [_ msg] (log-all info!   msg))
+      (notify! [_ msg] (log-all notify! msg))
+      (alert!  [_ msg] (log-all alert!   msg)))))
