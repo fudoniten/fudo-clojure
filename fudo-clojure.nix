@@ -1,4 +1,4 @@
-{ stdenv, lib, jre, clojure, callPackage, fetchgit, fetchMavenArtifact, ... }:
+{ stdenv, lib, clojure, callPackage, fetchgit, fetchMavenArtifact, ... }:
 
 let
   base-name = "fudo-clojure";
@@ -15,7 +15,7 @@ let
 in stdenv.mkDerivation {
   name = "${full-name}.jar";
   src = ./.;
-  buildInputs = [ jre clojure ] ++ (map (x: x.paths) clj-deps.packages);
+  buildInputs = [ clojure ] ++ (map (x: x.paths) clj-deps.packages);
   buildPhase = ''
     HOME=./home
     mkdir -p $HOME
