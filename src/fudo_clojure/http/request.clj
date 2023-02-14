@@ -19,8 +19,9 @@
 (s/def ::query-params (s/map-of keyword? ::param-value))
 (s/def ::body-params (s/map-of keyword? ::param-value))
 
-(defn- update-base [m k f & args]
+(defn- update-base
   "Update, but pass in the whole map to f, not just the key value."
+  [m k f & args]
   (assoc m k (apply f (cons m args))))
 
 (def url? (partial instance? java.net.URL))
@@ -35,12 +36,12 @@
 (defn- build-request-path [req]
   (apply build-path ((juxt ::base-request-path ::query-params) req)))
 
-(defn- build-url [host path query-params]
+(defn- build-url [host port path query-params]
   (let [full-path (build-path path query-params)]
-    (url->string (java.net.URL. "https" host full-path))))
+    (url->string (java.net.URL. "https" host port full-path))))
 
 (defn- build-request-url [req]
-  (apply build-url ((juxt ::host ::base-request-path ::query-params) req)))
+  (apply build-url ((juxt ::host ::port ::base-request-path ::query-params) req)))
 (s/fdef build-request-url
   :args (s/cat :req (s/keys :req [::base-request-path ::query-params]))
   :ret  string?)
@@ -51,7 +52,8 @@
 (defn base-request []
   {::timestamp         (java.time.Instant/now)
    ::query-params      {}
-   ::base-request-path "/"})
+   ::base-request-path "/"
+   ::port              80})
 
 (defn as-get [req]
   (assoc req ::http-method :GET))
@@ -71,6 +73,11 @@
 (defn with-host [req host]
   (-> req
       (assoc ::host host)
+      (refresh-request-url)))
+
+(defn with-port [req port]
+  (-> req
+      (assoc ::port port)
       (refresh-request-url)))
 
 (defn with-headers [req headers]
