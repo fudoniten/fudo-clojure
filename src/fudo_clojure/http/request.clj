@@ -1,11 +1,9 @@
 (ns fudo-clojure.http.request
   (:require [clojure.spec.alpha :as s]
-            [clojure.data.json :as json]
             [clj-http.client :as clj-http]
-            [camel-snake-kebab.core :refer [->snake_case_keyword]]
-            [fudo-clojure.common :as common]))
+            [camel-snake-kebab.core :refer [->snake_case_keyword]]))
 
-(s/def ::http-method #{ :GET :POST :DELETE })
+(s/def ::http-method #{ :GET :POST :DELETE :PUT })
 
 (let [path-regex #"^(/[^ !$?`&*\(\)+]+)+$"]
   (defn- valid-base-path? [path?]
@@ -110,23 +108,6 @@
 
 (defn with-body-params [req params]
   (update req ::body-params merge params))
-
-#_(defn finalize
-  "Coinbase (and presumably other exchanges) requires the submitted request to be
-  signed, including parts (full URL, request path, body) that won't be available
-  until the last minute. This function will format the request so clj-http can
-  execute it, and once the URL, body, and path are available and formatted, will
-  execute add-auth-headers (which is expected to add headers to the request)."
-  ([req] (finalize req (fn [_] {})))
-  ([req authenticate]
-   ;; This ordering is carefully thought out....
-   (-> req
-       (update-base ::query-params (comp sanitize-params ::query-params))
-       (update-base ::url          build-request-url)
-       (update-base ::request-path build-request-path)
-       (update-base :query-params  ::query-params)
-       (update-base :headers       ::headers)
-       (update-base :body          ::body))))
 
 ;; Basically getters
 (def timestamp    ::timestamp)
