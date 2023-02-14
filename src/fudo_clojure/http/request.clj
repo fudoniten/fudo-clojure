@@ -118,6 +118,8 @@
 (defn body-params [req]
   (-> req ::body-params (sanitize-params)))
 
+(defn uri [req] (-> req ::url (url->string)))
+
 (s/def ::request
   (s/keys :req [::url ::http-method ::query-params ::base-request-path ::timestamp]
           :opt [::body-params]))
