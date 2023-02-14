@@ -72,7 +72,8 @@
 (defprotocol HTTPClient
   (get!    [self req])
   (post!   [self req])
-  (delete! [self req]))
+  (delete! [self req])
+  (put!    [self req]))
 
 (def client? (partial satisfies? HTTPClient))
 (s/def ::client client?)
@@ -93,7 +94,12 @@
     (delete! [_ req]
       (clj-http/delete (::req/url req)
                        (merge (select-keys req [::req/headers])
-                              (::req/opts req))))))
+                              (::req/opts req))))
+
+    (put! [_ req]
+      (clj-http/put (::req/url req)
+                    (merge (select-keys req [::req/headers ::req/body])
+                           (::req/opts req))))))
 
 (defn client:wrap-results [client]
   (letfn [(execute! [f req]
@@ -105,7 +111,8 @@
     (reify HTTPClient
       (get!    [_ req] (execute! get!    req))
       (post!   [_ req] (execute! post!   req))
-      (delete! [_ req] (execute! delete! req)))))
+      (delete! [_ req] (execute! delete! req))
+      (put!    [_ req] (execute! put!    req)))))
 
 (defn client:log-requests [client logger]
   (letfn [(pp-str [o] (with-out-str (pprint o)))
@@ -120,13 +127,15 @@
     (reify HTTPClient
       (get!    [_ req] (wrap-request get!    "GET"    req))
       (post!   [_ req] (wrap-request post!   "POST"   req))
-      (delete! [_ req] (wrap-request delete! "DELETE" req)))))
+      (delete! [_ req] (wrap-request delete! "DELETE" req))
+      (put!    [_ req] (wrap-request put!    "PUT"    req)))))
 
 (defn client:authenticate-requests [client authenticator]
   (reify HTTPClient
     (get!    [_ req] (get!    client (authenticator req)))
     (post!   [_ req] (post!   client (authenticator req)))
-    (delete! [_ req] (delete! client (authenticator req)))))
+    (delete! [_ req] (delete! client (authenticator req)))
+    (put!    [_ req] (put!    client (authenticator req)))))
 
 (defn client:jsonify [client]
   (letfn [(decode-response [resp] (map-success resp response->json))
@@ -147,7 +156,13 @@
       (delete! [_ req]
         (decode-response (delete! client
                                   (assoc (prepare-request req) ::req/opts
-                                         {:accept :json})))))))
+                                         {:accept :json}))))
+
+      (put! [_ req]
+        (decode-response (put! client
+                               (assoc (prepare-request req) ::req/opts
+                                      {:accept       :json
+                                       :content-type :json})))))))
 
 (defn json-client [& {:keys [logger authenticator]
                       :or   {logger (log/dummy-logger)}}]
@@ -165,3 +180,4 @@
 (defmethod execute-request! :GET    [client req] (get!    client req))
 (defmethod execute-request! :POST   [client req] (post!   client req))
 (defmethod execute-request! :DELETE [client req] (delete! client req))
+(defmethod execute-request! :PUT    [client req] (put! client req))

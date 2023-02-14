@@ -64,6 +64,9 @@
 (defn as-delete [req]
   (assoc req ::http-method :DELETE))
 
+(defn as-put [req]
+  (assoc req ::http-method :PUT))
+
 (defn with-path [req path]
   (-> req
       (assoc       ::base-request-path path)
