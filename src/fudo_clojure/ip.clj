@@ -1,18 +1,25 @@
 (ns fudo-clojure.ip
   (:import com.google.common.net.InetAddresses
-           (java.net Inet4Address Inet6Address)))
+           (java.net Inet4Address Inet6Address NetworkInterface)))
 
-(defn is-ipv4? [ip] (instance? Inet4Address ip))
-(defn is-ipv6? [ip] (instance? Inet6Address ip))
+(defn- ipv4-impl? [ip] (instance? Inet4Address ip))
+(defn- ipv6-impl? [ip] (instance? Inet6Address ip))
+
+(defn- public-impl? [ip]
+  (and (not (.isLinkLocalAddress ip))
+       (not (.isLoopbackAddress ip))
+       (not (.isSiteLocalAddress ip))))
 
 (defprotocol IIPAddr
-  (ipv4? [_])
-  (ipv6? [_]))
+  (ipv4?   [_])
+  (ipv6?   [_])
+  (public? [_]))
 
 (defrecord IPAddr [ip]
   IIPAddr
-  (ipv4? [_] (is-ipv4? ip))
-  (ipv6? [_] (is-ipv6? ip))
+  (ipv4? [_]   (ipv4-impl? ip))
+  (ipv6? [_]   (ipv6-impl? ip))
+  (public? [_] (public-impl? ip))
 
   Object
   (toString [_] (InetAddresses/toAddrString ip)))
@@ -22,3 +29,9 @@
 
 (defn from-int [i]
   (->IPAddr (InetAddresses/fromInteger i)))
+
+(defn get-host-ips []
+  (->> (NetworkInterface/getNetworkInterfaces)
+       (enumeration-seq)
+       (mapcat #(enumeration-seq (.getInetAddresses %)))
+       (map #(IPAddr. %))))
