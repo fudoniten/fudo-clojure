@@ -146,23 +146,27 @@
     (reify HTTPClient
       (get! [_ req]
         (decode-response (get! client
-                               (assoc (prepare-request req) ::req/opts
-                                      {:accept :json}))))
+                               (-> req
+                                   (prepare-request)
+                                   (req/with-option :accept :json)))))
       (post! [_ req]
         (decode-response (post! client
-                                (assoc (prepare-request req) ::req/opts
-                                       {:accept       :json
-                                        :content-type :json}))))
+                                (-> req
+                                    (prepare-request)
+                                    (req/with-option :accept       :json)
+                                    (req/with-option :content-type :json)))))
       (delete! [_ req]
         (decode-response (delete! client
-                                  (assoc (prepare-request req) ::req/opts
-                                         {:accept :json}))))
+                                  (-> req
+                                      (prepare-request)
+                                      (req/with-option :accept :json)))))
 
       (put! [_ req]
         (decode-response (put! client
-                               (assoc (prepare-request req) ::req/opts
-                                      {:accept       :json
-                                       :content-type :json})))))))
+                               (-> req
+                                   (prepare-request)
+                                   (req/with-option :accept       :json)
+                                   (req/with-option :content-type :json))))))))
 
 (defn json-client [& {:keys [logger authenticator]
                       :or   {logger (log/dummy-logger)}}]
