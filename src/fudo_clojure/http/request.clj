@@ -91,6 +91,9 @@
 (defn with-timestamp [req ts]
   (assoc req ::timestamp ts))
 
+(defn with-option [req key val]
+  (assoc-in req [::opts key] val))
+
 (defn- stringify [v]
   (cond (keyword? v) (name v)
         (coll? v)    (map stringify v)
