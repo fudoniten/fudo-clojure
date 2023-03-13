@@ -34,14 +34,14 @@
 (defn- build-request-path [req]
   (apply build-path ((juxt ::base-request-path ::query-params) req)))
 
-(defn- build-url [host port path query-params]
+(defn- build-url [host port path query-params method]
   (let [full-path (build-path path query-params)]
-    (url->string (java.net.URL. "https" host port full-path))))
+    (url->string (java.net.URL. method host port full-path))))
 
 (defn- build-request-url [req]
-  (apply build-url ((juxt ::host ::port ::base-request-path ::query-params) req)))
+  (apply build-url ((juxt ::host ::port ::base-request-path ::query-params ::method) req)))
 (s/fdef build-request-url
-  :args (s/cat :req (s/keys :req [::base-request-path ::query-params]))
+  :args (s/cat :req (s/keys :req [::base-request-path ::query-params ::method]))
   :ret  string?)
 
 (defn- refresh-request-url [req]
@@ -51,7 +51,8 @@
   {::timestamp         (java.time.Instant/now)
    ::query-params      {}
    ::base-request-path "/"
-   ::port              80})
+   ::port              80
+   ::method            "https"})
 
 (defn as-get [req]
   (assoc req ::http-method :GET))
