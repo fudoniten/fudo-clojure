@@ -1,7 +1,7 @@
 (ns fudo-clojure.http.request
   (:require [clojure.spec.alpha :as s]
             [clj-http.client :as clj-http]
-            [camel-snake-kebab.core :refer [->snake_case_string]]))
+            [camel-snake-kebab.core :refer [->snake_case_string ->camelCaseString]]))
 
 (s/def ::http-method #{ :GET :POST :DELETE :PUT })
 
@@ -102,26 +102,29 @@
         (coll? v)    (map stringify v)
         :else        (str v)))
 
-(defn- header_case [h]
-  (let [leading-chars (re-find #"^[^a-zA-Z0-9]*" (name h))]
-    (keyword (str leading-chars (->snake_case_string h)))))
+(defn- header-case [h sanitizer]
+  (let [leading-chars (re-find #"^[^a-zA-Z0-9]*" (name h))
+        trailing-chars (re-find #"[^a-zA-Z0-9]*$" (name h))]
+    (keyword (str leading-chars (sanitizer h) trailing-chars))))
 
-(defn sanitize-params [params]
+(defn sanitize-params [params sanitizer]
   (into {}
-        (map (fn [[k v]] [(header_case k) (stringify v)]))
+        (map (fn [[h v]] [(header-case h sanitizer) (stringify v)]))
         params))
 
-(defn with-query-params [req params]
-  (-> req
-      (update      ::query-params merge (sanitize-params params))
-      (update-base ::request-path build-request-path)
-      (refresh-request-url)))
+(defn with-query-params
+  ([req params] (with-query-params req params name))
+  ([req params sanitizer]
+   (-> req
+       (update      ::query-params merge (sanitize-params params sanitizer))
+       (update-base ::request-path build-request-path)
+       (refresh-request-url))))
 
-(defn with-verbatim-query-params [req params]
-  (-> req
-      (update      ::query-params merge params)
-      (update-base ::request-path build-request-path)
-      (refresh-request-url)))
+(defn with_query_params [req params]
+  (with-query-params req params ->snake_case_string))
+
+(defn withQueryParams [req params]
+  (with-query-params req params ->camelCaseString))
 
 (defn with-body-params [req params]
   (update req ::body-params merge params))
