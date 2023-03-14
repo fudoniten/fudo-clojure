@@ -126,7 +126,7 @@
 (defn withQueryParams [req params]
   (with-query-params req params ->camelCaseString))
 
-(defn with-body-params [req params]
+#_(defn with-body-params [req params]
   (update req ::body-params merge params))
 
 ;; Basically getters
@@ -135,15 +135,20 @@
 (def request-path ::request-path)
 (def body         ::body)
 
+(defn with-body-params
+  ([req params] (with-body-params req params ->snake_case_string))
+  ([req params sanitizer]
+   (-> req
+       (update ::body-params merge (sanitize-params params sanitizer)))))
+
+(defn with_body_params [req params]
+  (with-body-params req params ->snake_case_string))
+
+(defn withBodyParams [req params]
+  (with-body-params req params ->camelCaseString))
+
 (defn body-params [req]
-  (-> req ::body-params (sanitize-params name)))
-
-(defn bodyParams [req]
-  (-> req ::body-params (sanitize-params ->camelCaseString)))
-
-(defn body_params [req]
-  (-> req ::body-params (sanitize-params ->snake_case_string)))
-
+  (::body-params req))
 
 (defn uri [req] (-> req ::url (url->string)))
 
