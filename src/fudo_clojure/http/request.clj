@@ -136,7 +136,14 @@
 (def body         ::body)
 
 (defn body-params [req]
-  (-> req ::body-params (sanitize-params)))
+  (-> req ::body-params (sanitize-params name)))
+
+(defn bodyParams [req]
+  (-> req ::body-params (sanitize-params ->camelCaseString)))
+
+(defn body_params [req]
+  (-> req ::body-params (sanitize-params ->snake_case_string)))
+
 
 (defn uri [req] (-> req ::url (url->string)))
 
