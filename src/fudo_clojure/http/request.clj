@@ -16,6 +16,7 @@
 (s/def ::param-value (s/or :str string? :num number? :keyword keyword?))
 (s/def ::query-params (s/map-of keyword? ::param-value))
 (s/def ::body-params (s/map-of keyword? ::param-value))
+(s/def ::response-format #{:json :binary :plain-text})
 
 (defn- update-base
   "Update, but pass in the whole map to f, not just the key value."
@@ -96,6 +97,9 @@
 
 (defn with-scheme [req scheme]
   (assoc req ::scheme scheme))
+
+(defn with-response-format [req fmt]
+  (assoc req ::response-format fmt))
 
 (defn- stringify [v]
   (cond (keyword? v) (name v)

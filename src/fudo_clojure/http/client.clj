@@ -138,31 +138,38 @@
     (put!    [_ req] (put!    client (authenticator req)))))
 
 (defn client:jsonify [client]
-  (letfn [(decode-response [resp] (map-success resp response->json))
+  (letfn [(decode-response [resp-fmt resp]
+            (if (or (nil? resp-fmt) (= :json resp-fmt))
+              (map-success resp response->json)
+              resp))
           (prepare-request [req] (assoc req ::req/body
                                         (some-> req
                                                 (req/body-params)
                                                 (json/write-str))))]
     (reify HTTPClient
       (get! [_ req]
-        (decode-response (get! client
+        (decode-response (::req/response-format req)
+                         (get! client
                                (-> req
                                    (prepare-request)
                                    (req/with-option :accept :json)))))
       (post! [_ req]
-        (decode-response (post! client
+        (decode-response (::req/response-format req)
+                         (post! client
                                 (-> req
                                     (prepare-request)
                                     (req/with-option :accept       :json)
                                     (req/with-option :content-type :json)))))
       (delete! [_ req]
-        (decode-response (delete! client
+        (decode-response (::req/response-format req)
+                         (delete! client
                                   (-> req
                                       (prepare-request)
                                       (req/with-option :accept :json)))))
 
       (put! [_ req]
-        (decode-response (put! client
+        (decode-response (::req/response-format req)
+                         (put! client
                                (-> req
                                    (prepare-request)
                                    (req/with-option :accept       :json)
