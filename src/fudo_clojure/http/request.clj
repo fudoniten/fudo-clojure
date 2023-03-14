@@ -1,7 +1,7 @@
 (ns fudo-clojure.http.request
   (:require [clojure.spec.alpha :as s]
             [clj-http.client :as clj-http]
-            [camel-snake-kebab.core :refer [->snake_case_keyword]]))
+            [camel-snake-kebab.core :refer [->snake_case_string]]))
 
 (s/def ::http-method #{ :GET :POST :DELETE :PUT })
 
@@ -102,9 +102,13 @@
         (coll? v)    (map stringify v)
         :else        (str v)))
 
+(defn- header_case [h]
+  (let [leading-chars (re-find #"^[^a-zA-Z0-9]*" (name h))]
+    (keyword (str leading-chars (->snake_case_string h)))))
+
 (defn sanitize-params [params]
   (into {}
-        (map (fn [[k v]] [(->snake_case_keyword k) (stringify v)]))
+        (map (fn [[k v]] [(header_case k) (stringify v)]))
         params))
 
 (defn with-query-params [req params]
