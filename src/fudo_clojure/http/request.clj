@@ -117,6 +117,12 @@
       (update-base ::request-path build-request-path)
       (refresh-request-url)))
 
+(defn with-verbatim-query-params [req params]
+  (-> req
+      (update      ::query-params merge params)
+      (update-base ::request-path build-request-path)
+      (refresh-request-url)))
+
 (defn with-body-params [req params]
   (update req ::body-params merge params))
 
