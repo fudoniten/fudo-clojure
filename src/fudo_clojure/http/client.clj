@@ -191,4 +191,4 @@
 (defmethod execute-request! :GET    [client req] (get!    client req))
 (defmethod execute-request! :POST   [client req] (post!   client req))
 (defmethod execute-request! :DELETE [client req] (delete! client req))
-(defmethod execute-request! :PUT    [client req] (put! client req))
+(defmethod execute-request! :PUT    [client req] (put!    client req))
