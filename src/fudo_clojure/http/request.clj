@@ -116,19 +116,20 @@
         (map (fn [[h v]] [(header-case h sanitizer) (stringify v)]))
         params))
 
-(defn with-query-params
-  ([req params sanitizer]
-   (-> req
-       (update      ::query-params merge (sanitize-params params sanitizer))
-       (update-base ::request-path build-request-path)
-       (refresh-request-url)))
-  ([req params] (with-query-params req params name)))
+(defn- with-query-params-impl [req params sanitizer]
+  (-> req
+      (update      ::query-params merge (sanitize-params params sanitizer))
+      (update-base ::request-path build-request-path)
+      (refresh-request-url)))
+
+(defn with-query-params [req params]
+  (with-query-params-impl req params name))
 
 (defn with_query_params [req params]
-  (with-query-params req params ->snake_case_string))
+  (with-query-params-impl req params ->snake_case_string))
 
 (defn withQueryParams [req params]
-  (with-query-params req params ->camelCaseString))
+  (with-query-params-impl req params ->camelCaseString))
 
 #_(defn with-body-params [req params]
   (update req ::body-params merge params))
