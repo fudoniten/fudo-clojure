@@ -37,7 +37,7 @@
 
 (defn- build-url [host port path query-params scheme]
   (let [full-path (build-path path query-params)]
-    (url->string (java.net.URL. scheme host port full-path))))
+    (java.net.URL. scheme host port full-path)))
 
 (defn- build-request-url [req]
   (apply build-url ((juxt ::host ::port ::base-request-path ::query-params ::scheme) req)))
