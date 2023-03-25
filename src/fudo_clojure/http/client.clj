@@ -137,6 +137,18 @@
     (delete! [_ req] (delete! client (authenticator req)))
     (put!    [_ req] (put!    client (authenticator req)))))
 
+(defn client:set-certificate-authorities [client ca-list]
+  (letfn [(add-CAs [req]
+            (if (seq ca-list)
+              (assoc-in req [:ssl-parameters :ca-certificates]
+                        ca-list)
+              req))]
+    (reify HTTPClient
+      (get!    [_ req] (get!    client (add-CAs req)))
+      (post!   [_ req] (post!   client (add-CAs req)))
+      (delete! [_ req] (delete! client (add-CAs req)))
+      (put!    [_ req] (put!    client (add-CAs req))))))
+
 (defn client:jsonify [client]
   (letfn [(decode-response [resp-fmt resp]
             (if (or (nil? resp-fmt) (= :json resp-fmt))
@@ -175,9 +187,11 @@
                                    (req/with-option :accept       :json)
                                    (req/with-option :content-type :json))))))))
 
-(defn json-client [& {:keys [logger authenticator]
-                      :or   {logger (log/dummy-logger)}}]
+(defn json-client [& {:keys [logger authenticator certificate-authorities]
+                      :or   {logger (log/dummy-logger)
+                             certificate-authorities []}}]
   (-> base-client
+      (client:set-certificate-authorities certificate-authorities)
       (client:log-requests logger)
       (client:wrap-results)
       (client:authenticate-requests (or authenticator identity))
