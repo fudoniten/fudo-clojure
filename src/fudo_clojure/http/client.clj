@@ -84,20 +84,20 @@
 (def base-client
   (reify HTTPClient
     (get! [_ req]
-      (clj-http/get (::req/url req)
+      (clj-http/get (str (::req/url req))
                     (merge (select-keys req [::req/headers])
                            (::req/opts req))))
     (post! [_ req]
-      (clj-http/post (::req/url req)
+      (clj-http/post (str (::req/url req))
                      (merge (select-keys req [::req/headers ::req/body])
                             (::req/opts req))))
     (delete! [_ req]
-      (clj-http/delete (::req/url req)
+      (clj-http/delete (str (::req/url req))
                        (merge (select-keys req [::req/headers])
                               (::req/opts req))))
 
     (put! [_ req]
-      (clj-http/put (::req/url req)
+      (clj-http/put (str (::req/url req))
                     (merge (select-keys req [::req/headers ::req/body])
                            (::req/opts req))))))
 
