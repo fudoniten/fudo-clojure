@@ -139,9 +139,7 @@
   (if (nil? ca)
     client
     (let [trust-store (ssl/trust-store ca)
-          add-trust-store (fn [req]
-                            (println (str "inserting trust store: " ca))
-                            (req/with-option req :trust-store trust-store))]
+          add-trust-store (fn [req] (req/with-option req :trust-store trust-store))]
       (reify HTTPClient
         (get!    [_ req] (get!    client (add-trust-store req)))
         (post!   [_ req] (post!   client (add-trust-store req)))
@@ -153,10 +151,16 @@
             (if (or (nil? resp-fmt) (= :json resp-fmt))
               (map-success resp response->json)
               resp))
-          (prepare-request [req] (assoc req ::req/body
-                                        (some-> req
-                                                (req/body-params)
-                                                (json/write-str))))]
+          (prepare-request [req]
+            (if (req/body req)
+              (->> req
+                  (req/body)
+                  (json/write-str)
+                  (assoc req ::req/body))
+              (some->> req
+                       (req/body-params)
+                       (json/write-str)
+                       (assoc req ::req/body))))]
     (reify HTTPClient
       (get! [_ req]
         (decode-response (::req/response-format req)
