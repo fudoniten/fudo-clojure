@@ -140,6 +140,7 @@
     client
     (let [trust-store (ssl/trust-store ca)
           add-keystore (fn [req] (req/with-option req :trust-store trust-store))]
+      (println (str "using certificate authority: " ca))
       (reify HTTPClient
         (get!    [_ req] (get!    client (add-keystore req)))
         (post!   [_ req] (post!   client (add-keystore req)))
