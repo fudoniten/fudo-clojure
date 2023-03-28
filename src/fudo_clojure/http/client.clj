@@ -3,15 +3,13 @@
             [clojure.spec.alpha :as s]
             [clojure.pprint :refer [pprint]]
             [clj-http.client :as clj-http]
-
-            [fudo-clojure.common :refer [ensure-conform]]
             [fudo-clojure.result :as result :refer [catching-errors
                                                     exception-failure
                                                     map-success
-                                                    success
-                                                    to-string]]
+                                                    success]]
             [fudo-clojure.logging :as log]
-            [fudo-clojure.http.request :as req]))
+            [fudo-clojure.http.request :as req]
+            [fudo-clojure.certs :refer [import-certificates]]))
 
 (defprotocol HTTPResult
   (status [self])
@@ -137,17 +135,16 @@
     (delete! [_ req] (delete! client (authenticator req)))
     (put!    [_ req] (put!    client (authenticator req)))))
 
-(defn client:set-certificate-authorities [client ca-list]
-  (letfn [(add-CAs [req]
-            (if (seq ca-list)
-              (assoc-in req [:ssl-parameters :ca-certificates]
-                        ca-list)
-              req))]
-    (reify HTTPClient
-      (get!    [_ req] (get!    client (add-CAs req)))
-      (post!   [_ req] (post!   client (add-CAs req)))
-      (delete! [_ req] (delete! client (add-CAs req)))
-      (put!    [_ req] (put!    client (add-CAs req))))))
+(defn client:set-certificate-authorities [client ca-map]
+  (if (empty? ca-map)
+    client
+    (let [keystore (import-certificates ca-map)
+          add-keystore (fn [req] (assoc req :keystore keystore))]
+      (reify HTTPClient
+        (get!    [_ req] (get!    client (add-keystore req)))
+        (post!   [_ req] (post!   client (add-keystore req)))
+        (delete! [_ req] (delete! client (add-keystore req)))
+        (put!    [_ req] (put!    client (add-keystore req)))))))
 
 (defn client:jsonify [client]
   (letfn [(decode-response [resp-fmt resp]
@@ -187,11 +184,11 @@
                                    (req/with-option :accept       :json)
                                    (req/with-option :content-type :json))))))))
 
-(defn json-client [& {:keys [logger authenticator certificate-authorities]
+(defn json-client [& {:keys [logger authenticator ca-map]
                       :or   {logger (log/dummy-logger)
-                             certificate-authorities []}}]
+                             ca-map {}}}]
   (-> base-client
-      (client:set-certificate-authorities certificate-authorities)
+      (client:set-certificate-authorities ca-map)
       (client:log-requests logger)
       (client:wrap-results)
       (client:authenticate-requests (or authenticator identity))

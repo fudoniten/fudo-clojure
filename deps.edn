@@ -9,6 +9,8 @@
         camel-snake-kebab/camel-snake-kebab { :mvn/version "0.4.2" }
 
         com.google.guava/guava { :mvn/version "31.1-jre" }
+
+        org.bouncycastle/bcprov-jdk15 { :mvn/version "1.46" }
         }
  :aliases
  {
