@@ -9,7 +9,7 @@
                                                     success]]
             [fudo-clojure.logging :as log]
             [fudo-clojure.http.request :as req]
-            [fudo-clojure.certs :refer [import-certificates]]))
+            [less.awful.ssl :as ssl]))
 
 (defprotocol HTTPResult
   (status [self])
@@ -135,11 +135,11 @@
     (delete! [_ req] (delete! client (authenticator req)))
     (put!    [_ req] (put!    client (authenticator req)))))
 
-(defn client:set-certificate-authorities [client ca-map]
-  (if (empty? ca-map)
+(defn client:set-certificate-authorities [client ca]
+  (if (nil? ca)
     client
-    (let [keystore (import-certificates ca-map)
-          add-keystore (fn [req] (req/with-option req :trust-store keystore))]
+    (let [trust-store (ssl/trust-store ca)
+          add-keystore (fn [req] (req/with-option req :trust-store trust-store))]
       (reify HTTPClient
         (get!    [_ req] (get!    client (add-keystore req)))
         (post!   [_ req] (post!   client (add-keystore req)))
@@ -184,11 +184,11 @@
                                    (req/with-option :accept       :json)
                                    (req/with-option :content-type :json))))))))
 
-(defn json-client [& {:keys [logger authenticator ca-map]
+(defn json-client [& {:keys [logger authenticator certificate-authorities]
                       :or   {logger (log/dummy-logger)
-                             ca-map {}}}]
+                             certificate-authorities {}}}]
   (-> base-client
-      (client:set-certificate-authorities ca-map)
+      (client:set-certificate-authorities certificate-authorities)
       (client:log-requests logger)
       (client:wrap-results)
       (client:authenticate-requests (or authenticator identity))
