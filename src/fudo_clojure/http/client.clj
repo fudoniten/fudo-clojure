@@ -139,13 +139,14 @@
   (if (nil? ca)
     client
     (let [trust-store (ssl/trust-store ca)
-          add-keystore (fn [req] (req/with-option req :trust-store trust-store))]
-      (println (str "using certificate authority: " ca))
+          add-trust-store (fn [req]
+                            (println (str "inserting trust store: " ca))
+                            (req/with-option req :trust-store trust-store))]
       (reify HTTPClient
-        (get!    [_ req] (get!    client (add-keystore req)))
-        (post!   [_ req] (post!   client (add-keystore req)))
-        (delete! [_ req] (delete! client (add-keystore req)))
-        (put!    [_ req] (put!    client (add-keystore req)))))))
+        (get!    [_ req] (get!    client (add-trust-store req)))
+        (post!   [_ req] (post!   client (add-trust-store req)))
+        (delete! [_ req] (delete! client (add-trust-store req)))
+        (put!    [_ req] (put!    client (add-trust-store req)))))))
 
 (defn client:jsonify [client]
   (letfn [(decode-response [resp-fmt resp]
