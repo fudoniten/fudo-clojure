@@ -135,7 +135,7 @@
     (delete! [_ req] (delete! client (authenticator req)))
     (put!    [_ req] (put!    client (authenticator req)))))
 
-(defn client:set-certificate-authorities [client ca]
+(defn client:set-certificate-authority [client ca]
   (if (nil? ca)
     client
     (let [trust-store (ssl/trust-store ca)
@@ -184,11 +184,10 @@
                                    (req/with-option :accept       :json)
                                    (req/with-option :content-type :json))))))))
 
-(defn json-client [& {:keys [logger authenticator certificate-authorities]
-                      :or   {logger (log/dummy-logger)
-                             certificate-authorities {}}}]
+(defn json-client [& {:keys [logger authenticator certificate-authority]
+                      :or   {logger (log/dummy-logger)}}]
   (-> base-client
-      (client:set-certificate-authorities certificate-authorities)
+      (client:set-certificate-authority certificate-authority)
       (client:log-requests logger)
       (client:wrap-results)
       (client:authenticate-requests (or authenticator identity))
