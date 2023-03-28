@@ -188,8 +188,8 @@
 (defn json-client [& {:keys [logger authenticator certificate-authority]
                       :or   {logger (log/dummy-logger)}}]
   (-> base-client
-      (client:set-certificate-authority certificate-authority)
       (client:log-requests logger)
+      (client:set-certificate-authority certificate-authority)
       (client:wrap-results)
       (client:authenticate-requests (or authenticator identity))
       (client:jsonify)))
