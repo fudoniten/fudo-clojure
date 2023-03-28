@@ -139,7 +139,7 @@
   (if (empty? ca-map)
     client
     (let [keystore (import-certificates ca-map)
-          add-keystore (fn [req] (assoc req :keystore keystore))]
+          add-keystore (fn [req] (req/with-option req :trust-store keystore))]
       (reify HTTPClient
         (get!    [_ req] (get!    client (add-keystore req)))
         (post!   [_ req] (post!   client (add-keystore req)))
