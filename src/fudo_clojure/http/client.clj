@@ -82,24 +82,28 @@
   (json/read-str (:body response) :key-fn keyword))
 
 (def base-client
-  (reify HTTPClient
-    (get! [_ req]
-      (clj-http/get (str (::req/url req))
-                    (merge (select-keys req [::req/headers])
-                           (::req/opts req))))
-    (post! [_ req]
-      (clj-http/post (str (::req/url req))
-                     (merge (select-keys req [::req/headers ::req/body])
-                            (::req/opts req))))
-    (delete! [_ req]
-      (clj-http/delete (str (::req/url req))
-                       (merge (select-keys req [::req/headers])
-                              (::req/opts req))))
+  (letfn [(rm-ns [m]
+            (into {}
+                  (map (fn [[k v]] [(keyword (name k)) v]))
+                  m))]
+    (reify HTTPClient
+      (get! [_ req]
+        (clj-http/get (str (::req/url req))
+                      (rm-ns (merge (select-keys req [::req/headers])
+                                    (::req/opts req)))))
+      (post! [_ req]
+        (clj-http/post (str (::req/url req))
+                       (rm-ns (merge (select-keys req [::req/headers ::req/body])
+                                     (::req/opts req)))))
+      (delete! [_ req]
+        (clj-http/delete (str (::req/url req))
+                         (rm-ns (merge (select-keys req [::req/headers])
+                                      (::req/opts req)))))
 
-    (put! [_ req]
-      (clj-http/put (str (::req/url req))
-                    (pthru (merge (select-keys req [::req/headers ::req/body])
-                                  (::req/opts req)))))))
+      (put! [_ req]
+        (clj-http/put (str (::req/url req))
+                      (rm-ns (merge (select-keys req [::req/headers ::req/body])
+                                    (::req/opts req))))))))
 
 (defn client:wrap-results [client]
   (letfn [(execute! [f req]
