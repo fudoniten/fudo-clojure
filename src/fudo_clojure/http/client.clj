@@ -11,6 +11,8 @@
             [fudo-clojure.http.request :as req]
             [less.awful.ssl :as ssl]))
 
+(defn- pthru [o] (clojure.pprint/pprint o) o)
+
 (defprotocol HTTPResult
   (status [self])
   (status-message [self]))
@@ -48,8 +50,8 @@
       (to-string   [_]      (str "#http-failure[" (.toString e) "]"))
 
       HTTPResult
-      (status         [self] (:status resp))
-      (status-message [self] (str (:status resp) " " (:reason-phrase resp)))
+      (status         [_]   (:status resp))
+      (status-message [_]   (str (:status resp) " " (:reason-phrase resp)))
 
       HTTPFailure
       (not-found?    [self] (= 404  (status self)))
@@ -96,8 +98,8 @@
 
     (put! [_ req]
       (clj-http/put (str (::req/url req))
-                    (merge (select-keys req [::req/headers ::req/body])
-                           (::req/opts req))))))
+                    (pthru (merge (select-keys req [::req/headers ::req/body])
+                                  (::req/opts req)))))))
 
 (defn client:wrap-results [client]
   (letfn [(execute! [f req]
