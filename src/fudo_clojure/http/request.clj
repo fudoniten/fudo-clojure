@@ -139,6 +139,7 @@
 (def method       (comp name ::http-method))
 (def request-path ::request-path)
 (def body         ::body)
+(def host         ::host)
 
 (defn with-body-params
   ([req params] (with-body-params req params ->snake_case_string))
