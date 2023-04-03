@@ -11,8 +11,6 @@
             [fudo-clojure.http.request :as req]
             [less.awful.ssl :as ssl]))
 
-(defn- pthru [o] (clojure.pprint/pprint o) o)
-
 (defprotocol HTTPResult
   (status [self])
   (status-message [self]))

@@ -37,6 +37,7 @@
 (defmethod level-to-int :warn   [_] 1)
 (defmethod level-to-int :error  [_] 2)
 (defmethod level-to-int :fatal  [_] 3)
+
 (defmethod level-to-int :info   [_] 0)
 (defmethod level-to-int :notify [_] 1)
 (defmethod level-to-int :alert  [_] 2)
@@ -44,8 +45,8 @@
 (defn log-to-function
   ([f] (log-to-function f :error :notify))
   ([f error logic]
-   (let [error-level (.indexOf error-log-level error)
-         logic-level (.indexOf logic-log-level logic)]
+   (let [error-level (level-to-int error)
+         logic-level (level-to-int logic)]
      (reify Logger
        (debug!  [_ msg] (when (>= error-level 0) (f msg)))
        (warn!   [_ msg] (when (>= error-level 1) (f msg)))
