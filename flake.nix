@@ -2,38 +2,40 @@
   description = "Fudo Clojure utilities.";
 
   inputs = {
-    nixpkgs.url = "nixpkgs/nixos-21.11";
+    nixpkgs.url = "nixpkgs/nixos-23.11";
     utils.url = "github:numtide/flake-utils";
-    clj-nix = {
-      url = "github:jlesquembre/clj-nix";
+    helpers = {
+      url = "git+https://fudo.dev/public/nix-helpers.git";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
-  outputs = { self, nixpkgs, utils, clj-nix, ... }:
+  outputs = { self, nixpkgs, utils, helpers, ... }:
     utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages."${system}";
-        cljpkgs = clj-nix.packages."${system}";
-        update-deps = pkgs.writeShellScriptBin "update-deps.sh" ''
-          ${clj-nix.packages."${system}".deps-lock}/bin/deps-lock
-        '';
+        inherit (helpers.packages."${system}") mkClojureLib mkClojureBin;
       in {
-        packages = {
-          fudo-clojure = cljpkgs.mkCljBin {
-            projectSrc = ./.;
-            name = "org.fudo/fudo-clojure";
-            main-ns = "fudo-clojure.core";
-            jdkRunner = pkgs.jdk17_headless;
-
-            doCheck = true;
+        packages = rec {
+          default = fudo-clojure;
+          fudo-clojure-bin = mkClojureBin {
+            name = "org.fudo/fudo-clojure-bin";
+            primaryNamespace = "fudo-clojure.core";
+            src = ./.;
             checkPhase = "clj -X:test";
+          };
+          fudo-clojure = mkClojureLib {
+            name = "org.fudo/fudo-clojure";
+            src = ./.;
           };
         };
 
-        packages.default = self.packages."${system}".fudo-clojure;
-
-        devShells.default =
-          pkgs.mkShell { buildInputs = with pkgs; [ clojure update-deps ]; };
+        devShells = rec {
+          default = updateDeps;
+          updateDeps = pkgs.mkShell {
+            buildInputs = with helpers.packages."${system}";
+              [ (updateClojureDeps { }) ];
+          };
+        };
       });
 }
