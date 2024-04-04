@@ -861,6 +861,16 @@
       "hash": "sha256-neutGiOLhwJX+Y+CefwezwsSzHZanMPM8LoP28MjdkU="
     },
     {
+      "mvn-path": "org/bouncycastle/bcprov-jdk15/1.46/bcprov-jdk15-1.46.jar",
+      "mvn-repo": "https://repo.maven.apache.org/maven2/",
+      "hash": "sha256-u5qbs6RJeoivHPyldOKLenY7X0+dubVH8r5Lm3Y8pgA="
+    },
+    {
+      "mvn-path": "org/bouncycastle/bcprov-jdk15/1.46/bcprov-jdk15-1.46.pom",
+      "mvn-repo": "https://repo.maven.apache.org/maven2/",
+      "hash": "sha256-Vgvgc0jVM4GI9RnOGhs7sckq2Y63V4HAUj7Y4bsU/iE="
+    },
+    {
       "mvn-path": "org/checkerframework/checker-qual/3.12.0/checker-qual-3.12.0.jar",
       "mvn-repo": "https://repo.maven.apache.org/maven2/",
       "hash": "sha256-/xB4WsKjV+xd6cKTy5gqLLtgXAMJ6kzBy5ubxtvn88s="
