@@ -13,6 +13,8 @@
         org.bouncycastle/bcprov-jdk15 { :mvn/version "1.46" }
 
         less-awful-ssl/less-awful-ssl { :mvn/version "1.0.6" }
+
+        commons-net/commons-net { :mvn/version "3.10.0" }
         }
  :aliases
  {

@@ -371,6 +371,16 @@
       "hash": "sha256-yRq1qlcNhvb9B8wVjsa8LFAIBAKXLukXn+JBAHOfuyA="
     },
     {
+      "mvn-path": "commons-net/commons-net/3.10.0/commons-net-3.10.0.jar",
+      "mvn-repo": "https://repo.maven.apache.org/maven2/",
+      "hash": "sha256-IjDuxE70uBEuoJy+tt6CaXer55LmJ87idw41yow53OE="
+    },
+    {
+      "mvn-path": "commons-net/commons-net/3.10.0/commons-net-3.10.0.pom",
+      "mvn-repo": "https://repo.maven.apache.org/maven2/",
+      "hash": "sha256-CF86fYS5o1C1toQGhjkL5ELy6Qct6NHpzMj/08mx6qo="
+    },
+    {
       "mvn-path": "io/github/clojure/tools.build/0.10.0/tools.build-0.10.0.jar",
       "mvn-repo": "https://repo.maven.apache.org/maven2/",
       "hash": "sha256-MgIVic/enGTmQ6qE7DdasG8T+MHEBT7gFCBPaG+zG+Y="
@@ -491,6 +501,11 @@
       "hash": "sha256-dluccYMtL6rZYRhpwfByY+Pf0ADr79zUNNHxTLK+PqE="
     },
     {
+      "mvn-path": "org/apache/apache/30/apache-30.pom",
+      "mvn-repo": "https://repo.maven.apache.org/maven2/",
+      "hash": "sha256-Y91KOTqcDfyzFO/oOHGkHSQ7yNIAy8fy0ZfzDaeCOdg="
+    },
+    {
       "mvn-path": "org/apache/commons/commons-lang3/3.12.0/commons-lang3-3.12.0.jar",
       "mvn-repo": "https://repo.maven.apache.org/maven2/",
       "hash": "sha256-2RnZBEhsA3+NGTQS2gyS4iqfokIwudZ6V4VcXDHH6U4="
@@ -519,6 +534,11 @@
       "mvn-path": "org/apache/commons/commons-parent/52/commons-parent-52.pom",
       "mvn-repo": "https://repo.maven.apache.org/maven2/",
       "hash": "sha256-ddvo806Y5MP/QtquSi+etMvNO18QR9VEYKzpBtu0UC4="
+    },
+    {
+      "mvn-path": "org/apache/commons/commons-parent/62/commons-parent-62.pom",
+      "mvn-repo": "https://repo.maven.apache.org/maven2/",
+      "hash": "sha256-dM1i1osJqtf7lCTqiCaat2q6DWUIjZVp/yc70gdCdDk="
     },
     {
       "mvn-path": "org/apache/httpcomponents/httpasyncclient/4.1.4/httpasyncclient-4.1.4.jar",
@@ -1354,6 +1374,11 @@
       "mvn-path": "org/jboss/jboss-parent/36/jboss-parent-36.pom",
       "mvn-repo": "https://repo.maven.apache.org/maven2/",
       "hash": "sha256-AA3WFimK69IanVcxh03wg9cphCS5HgN7c8vdB+vIPg4="
+    },
+    {
+      "mvn-path": "org/junit/junit-bom/5.10.0/junit-bom-5.10.0.pom",
+      "mvn-repo": "https://repo.maven.apache.org/maven2/",
+      "hash": "sha256-4AbdiJT5/Ht1/DK7Ev5e2L5lZn1bRU+Z4uC4xbuNMLM="
     },
     {
       "mvn-path": "org/junit/junit-bom/5.7.1/junit-bom-5.7.1.pom",
