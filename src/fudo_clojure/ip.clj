@@ -13,7 +13,7 @@
   (and (not (.isLinkLocalAddress ip))
        (not (.isLoopbackAddress ip))
        (not (.isSiteLocalAddress ip))
-       (not (is-tailscale-ip? ip))))
+       (not (is-tailscale-ip? (InetAddresses/toAddrString)))))
 
 (defprotocol IIPAddr
   (ipv4?    [_])
