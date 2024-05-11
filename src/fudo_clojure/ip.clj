@@ -60,10 +60,6 @@
         (unsigned-bit-shift-right shift)
         (int->ipv4))))
 
-(defn- network-v4-range [net]
-  [(network-v4-min-ip net)
-   (network-v4-max-ip net)])
-
 (defn- network-range [subnet]
   [(network-min-ip subnet) (network-max-ip subnet)])
 
