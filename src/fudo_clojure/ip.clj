@@ -67,7 +67,7 @@
   (let [[min max] (network-range subnet)]
     (<= min (ip->int ip) max)))
 
-(defn- is-tailscale-ip? [ip]
+(defn- ip-tailscale? [ip]
   (or (ip-on-subnet? (str ip) "100.64.0.0/10")
       (ip-on-subnet? (str ip) "fd7a:115c:a1e0::/96")))
 
@@ -75,7 +75,10 @@
   (and (not (.isLinkLocalAddress ip))
        (not (.isLoopbackAddress ip))
        (not (.isSiteLocalAddress ip))
-       (not (is-tailscale-ip? (InetAddresses/toAddrString ip)))))
+       (not (ip-tailscale? (InetAddresses/toAddrString ip)))))
+
+(defn- ip-sitelocal? [ip]
+  (.isSiteLocalAddress ip))
 
 (defprotocol IIPAddr
   (ipv4?      [_])
@@ -83,6 +86,7 @@
   (public?    [_])
   (private?   [_])
   (tailscale? [_])
+  (sitelocal? [_])
   (on-subnet? [_ subnet]))
 
 (defrecord IPAddr [ip]
@@ -91,7 +95,8 @@
   (ipv6?      [_]        (is-ipv6? ip))
   (public?    [_]        (ip-public? ip))
   (private?   [self]     (not (public? self)))
-  (tailscale? [_]        (is-tailscale-ip? (InetAddresses/toAddrString ip)))
+  (tailscale? [_]        (ip-tailscale? (InetAddresses/toAddrString ip)))
+  (sitelocal? [_]        (ip-sitelocal? ip))
   (on-subnet? [_ subnet] (ip-on-subnet? ip subnet))
 
   Object
