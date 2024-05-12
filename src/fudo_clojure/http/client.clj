@@ -25,12 +25,14 @@
 (defn http-success [resp]
   (reify
     result/Result
-    (success?    [_]   true)
-    (failure?    [_]   false)
-    (map-success [_ f] (catching-errors (success (f resp))))
-    (bind        [_ f] (f resp))
-    (unwrap      [_]   (:body resp))
-    (to-string   [_]   (str "#http-success[" resp "]"))
+    (success?     [_]   true)
+    (failure?     [_]   false)
+    (map-success  [_ f] (catching-errors (success (f resp))))
+    (send-success [_ f] (f resp))
+    (send-failure [_ _] nil)
+    (bind         [_ f] (f resp))
+    (unwrap       [_]   (:body resp))
+    (to-string    [_]   (str "#http-success[" resp "]"))
 
     HTTPResult
     (status [_] (Integer/parseInt (:status resp)))
@@ -40,23 +42,25 @@
   (let [resp (ex-data e)]
     (reify
       result/Result
-      (failure?    [_]      true)
-      (success?    [_]      false)
-      (map-success [self _] self)
-      (bind        [self _] self)
-      (unwrap      [_]      (throw e))
-      (to-string   [_]      (str "#http-failure[" (.toString e) "]"))
+      (failure?     [_]      true)
+      (success?     [_]      false)
+      (map-success  [self _] self)
+      (send-success [_ _]    nil)
+      (send-failure [_ f]    (f resp))
+      (bind         [self _] self)
+      (unwrap       [_]      (throw e))
+      (to-string    [_]      (str "#http-failure[" (.toString e) "]"))
 
       HTTPResult
       (status         [_]   (:status resp))
       (status-message [_]   (str (:status resp) " " (:reason-phrase resp)))
 
       HTTPFailure
-      (not-found?    [self] (= 404  (status self)))
-      (unauthorized? [self] (= 401  (status self)))
-      (forbidden?    [self] (= 403  (status self)))
-      (bad-request?  [self] (= 400  (status self)))
-      (server-error? [self] (<= 500 (status self) 599))
+      (not-found?    [self] (=  404  (status self)))
+      (unauthorized? [self] (=  401  (status self)))
+      (forbidden?    [self] (=  403  (status self)))
+      (bad-request?  [self] (=  400  (status self)))
+      (server-error? [self] (<= 500  (status self) 599))
 
       result/ResultFailure
       (error-message [self] (status-message self))

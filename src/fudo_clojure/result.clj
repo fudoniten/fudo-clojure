@@ -8,6 +8,7 @@
   (bind [self f])
   (map-success [self f])
   (send-success [self f])
+  (send-failure [self f])
   (unwrap [self])
   (to-string [self]))
 
@@ -62,6 +63,7 @@
   (success? [_] false)
   (map-success [self _] self)
   (send-success [_ _] nil)
+  (send-failure [_ f] (f e))
   (bind [self _] self)
   (unwrap [_] (throw e))
   (to-string [_] (str "#exception-failure[" (.getMessage e) "]"))
@@ -80,6 +82,7 @@
   (success? [_] false)
   (map-success [self _] self)
   (send-success [_ _] nil)
+  (send-failure [_ f] (f msg))
   (bind [self _] self)
   (unwrap [_] (throw (ex-info msg context)))
   (to-string [_] (str "#failure[" msg "]"))
