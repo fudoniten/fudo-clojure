@@ -107,6 +107,7 @@
   (failure? [_] false)
   (map-success [_ f] (catching-errors (->Success (f val))))
   (send-success [_ f] (f val))
+  (send-failure [_ _] nil)
   (bind [_ f] (catching-errors (f val)))
   (unwrap [_] val)
   (to-string [_] (str "#success[" val "]")))
