@@ -30,10 +30,5 @@
          :main-opts ["-m" "cognitect.test-runner"]
          :exec-fn cognitect.test-runner.api/test
          }
-
-  :lint {
-         :replace-deps { clj-kondo/clj-kondo {:mvn/version "2022.04.25"} }
-         :main-opts ["-m" "clj-kondo.main" "--lint" "src"]
-         }
   }
  }
