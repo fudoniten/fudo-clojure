@@ -6,3 +6,7 @@ tmp/
 .cpcache/
 .nrepl-port
 target/
+.clj-kondo/
+.hgignore
+.lsp/
+pom.xml
