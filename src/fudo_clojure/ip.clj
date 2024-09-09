@@ -69,7 +69,7 @@
 
 (defn- ip-tailscale? [ip]
   (or (ip-on-subnet? (str ip) "100.64.0.0/10")
-      (ip-on-subnet? (str ip) "fd7a:115c:a1e0::/96")))
+      (ip-on-subnet? (str ip) "fd7a:115c:a1e0::/48")))
 
 (defn- ip-public? [ip]
   (and (not (.isLinkLocalAddress ip))
