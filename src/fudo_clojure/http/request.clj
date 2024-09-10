@@ -84,6 +84,9 @@
       (refresh-request-url)))
 
 (defn with-headers [req headers]
+  (update req ::headers
+          (fn [prev-headers]
+            (merge prev-headers headers)))
   (assoc req ::headers headers))
 
 (defn with-header [req header value]
