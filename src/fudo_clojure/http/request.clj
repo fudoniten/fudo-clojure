@@ -86,8 +86,7 @@
 (defn with-headers [req headers]
   (update req ::headers
           (fn [prev-headers]
-            (merge prev-headers headers)))
-  (assoc req ::headers headers))
+            (merge prev-headers headers))))
 
 (defn with-header [req header value]
   (update req ::headers
