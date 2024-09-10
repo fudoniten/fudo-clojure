@@ -86,6 +86,12 @@
 (defn with-headers [req headers]
   (assoc req ::headers headers))
 
+(defn with-header [req header value]
+  (update req ::headers
+          (fn [headers]
+            (assoc (or headers {})
+                   header value))))
+
 (defn with-body [req body]
   (assoc req ::body body))
 
