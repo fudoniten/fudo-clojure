@@ -160,15 +160,15 @@
               (map-success resp response->json)
               resp))
           (prepare-request [req]
-            (if (req/body req)
-              (->> req
-                  (req/body)
-                  (json/write-str)
-                  (assoc req ::req/body))
-              (some->> req
-                       (req/body-params)
-                       (json/write-str)
-                       (assoc req ::req/body))))]
+            (cond (req/body req)        (->> req
+                                             (req/body)
+                                             (json/write-str)
+                                             (assoc req ::req/body))
+                  (req/body-params req) (some->> req
+                                                 (req/body-params)
+                                                 (json/write-str)
+                                                 (assoc req ::req/body))
+                  :else                 req))]
     (reify HTTPClient
       (get! [_ req]
         (decode-response (::req/response-format req)
@@ -188,7 +188,8 @@
                          (delete! client
                                   (-> req
                                       (prepare-request)
-                                      (req/with-option :accept :json)))))
+                                      (req/with-option :accept       :json)
+                                      (req/with-option :content-type :json)))))
 
       (put! [_ req]
         (decode-response (::req/response-format req)
