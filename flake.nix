@@ -14,7 +14,7 @@
     utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages."${system}";
-        inherit (helpers.packages."${system}") mkClojureLib mkClojureBin;
+        inherit (helpers.legacyPackages."${system}") mkClojureLib mkClojureBin;
       in {
         packages = rec {
           default = fudo-clojure;
@@ -33,7 +33,7 @@
         devShells = rec {
           default = updateDeps;
           updateDeps = pkgs.mkShell {
-            buildInputs = with helpers.packages."${system}";
+            buildInputs = with helpers.legacyPackages."${system}";
               [ (updateClojureDeps { }) ];
           };
         };
