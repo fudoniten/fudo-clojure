@@ -70,23 +70,23 @@
                                  (req/as-delete req))
                unwrap)))
 
-    (is (= "https://test.host/one/two?"
-           (-> (execute-request! (client-returning-fn (fn [req] (resp :body (::req/url req))))
+    (is (= "https://test.host:80/one/two?"
+           (-> (execute-request! (client-returning-fn (fn [req] (resp :body (req/uri req))))
                                  (-> req
                                      (req/with-host "test.host")
                                      (req/with-path "/one/two")))
                unwrap)))
 
-    (is (= "https://test.host/one/two?test=1"
-           (-> (execute-request! (client-returning-fn (fn [req] (resp :body (::req/url req))))
+    (is (= "https://test.host:80/one/two?test=1"
+           (-> (execute-request! (client-returning-fn (fn [req] (resp :body (req/uri req))))
                                  (-> req
                                      (req/with-host "test.host")
                                      (req/with-path "/one/two")
                                      (req/with-query-params { :test 1 })))
                unwrap)))
 
-    (is (= "https://test.host/one/two?test_one=1"
-           (-> (execute-request! (client-returning-fn (fn [req] (resp :body (::req/url req))))
+    (is (= "https://test.host:80/one/two?TEST-ONE=1"
+           (-> (execute-request! (client-returning-fn (fn [req] (resp :body (req/uri req))))
                                  (-> req
                                      (req/with-host "test.host")
                                      (req/with-path "/one/two")
@@ -217,10 +217,11 @@
     (testing "passed-request"
       (let [ts (java.time.Instant/now)]
         (is (= (common/instant-to-epoch-timestamp ts)
-               (-> (execute-request! (authenticated-client-returning-fn (output-keys [req/timestamp])
+               (-> (execute-request! (authenticated-client-returning-fn (output-keys [(comp str req/timestamp)])
                                                                         forward-output)
                                      (-> req
-                                         (req/with-timestamp ts)))
+                                         (req/with-timestamp ts)
+                                         (req/with-body-params {})))
                    (unwrap)
                    :result
                    (nth 0)
@@ -230,7 +231,7 @@
       (is (= "GET"
              (-> (execute-request! (authenticated-client-returning-fn (output-keys [req/method])
                                                                       forward-output)
-                                   req)
+                                   (req/with-body-params req {}))
                  (unwrap)
                  :result
                  (nth 0))))
@@ -239,7 +240,8 @@
              (-> (execute-request! (authenticated-client-returning-fn (output-keys [req/request-path])
                                                                       forward-output)
                                    (-> req
-                                       (req/with-path "/one/two")))
+                                       (req/with-path "/one/two")
+                                       (req/with-body-params {})))
                  (unwrap)
                  :result
                  (nth 0))))
@@ -249,7 +251,8 @@
                                                                       forward-output)
                                    (-> req
                                        (req/with-path "/one/two")
-                                       (req/with-query-params {:a 3 :b 4})))
+                                       (req/with-query-params {:a 3 :b 4})
+                                       (req/with-body-params {})))
                  (unwrap)
                  :result
                  (nth 0))))

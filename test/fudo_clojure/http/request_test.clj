@@ -29,11 +29,11 @@
 
 (deftest test-constructors
   (testing "as-get"
-    (is (= :GET (::req/http-method (as-get {})))))
+    (is (= :GET (::req/http-method (as-get (base-request))))))
   (testing "with-path"
-    (is (= "/one/two" (::req/base-request-path (with-path {} "/one/two")))))
+    (is (= "/one/two" (::req/base-request-path (with-path (base-request) "/one/two")))))
   (testing "with-host"
-    (is (= "one.two.three" (::req/host (with-host {} "one.two.three"))))))
+    (is (= "one.two.three" (::req/host (with-host (base-request) "one.two.three"))))))
 
 
 (t/run-tests 'fudo-clojure.http.request-test)
