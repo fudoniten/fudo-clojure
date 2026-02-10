@@ -4,10 +4,7 @@
       "inputs": {
         "devshell": "devshell",
         "nix-fetcher-data": "nix-fetcher-data",
-        "nixpkgs": [
-          "helpers",
-          "nixpkgs"
-        ]
+        "nixpkgs": ["helpers", "nixpkgs"]
       },
       "locked": {
         "lastModified": 1732066389,
@@ -47,11 +44,7 @@
     },
     "devshell": {
       "inputs": {
-        "nixpkgs": [
-          "helpers",
-          "clj-nix",
-          "nixpkgs"
-        ]
+        "nixpkgs": ["helpers", "clj-nix", "nixpkgs"]
       },
       "locked": {
         "lastModified": 1728330715,
@@ -103,11 +96,7 @@
     },
     "gitignore": {
       "inputs": {
-        "nixpkgs": [
-          "helpers",
-          "clj2nix",
-          "nixpkgs"
-        ]
+        "nixpkgs": ["helpers", "clj2nix", "nixpkgs"]
       },
       "locked": {
         "lastModified": 1660459072,
@@ -128,9 +117,7 @@
         "clj-nix": "clj-nix",
         "clj2nix": "clj2nix",
         "nix2container": "nix2container",
-        "nixpkgs": [
-          "nixpkgs"
-        ],
+        "nixpkgs": ["nixpkgs"],
         "utils": "utils_2"
       },
       "locked": {
@@ -150,11 +137,7 @@
     "nix-fetcher-data": {
       "inputs": {
         "flake-parts": "flake-parts",
-        "nixpkgs": [
-          "helpers",
-          "clj-nix",
-          "nixpkgs"
-        ]
+        "nixpkgs": ["helpers", "clj-nix", "nixpkgs"]
       },
       "locked": {
         "lastModified": 1728229178,
@@ -232,11 +215,11 @@
     },
     "nixpkgs_3": {
       "locked": {
-        "lastModified": 1720691131,
-        "narHash": "sha256-CWT+KN8aTPyMIx8P303gsVxUnkinIz0a/Cmasz1jyIM=",
+        "lastModified": 1770464364,
+        "narHash": "sha256-z5NJPSBwsLf/OfD8WTmh79tlSU8XgIbwmk6qB1/TFzY=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "a046c1202e11b62cbede5385ba64908feb7bfac4",
+        "rev": "23d72dabcb3b12469f57b37170fcbc1789bd7457",
         "type": "github"
       },
       "original": {
